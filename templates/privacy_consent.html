@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}개인정보 동의서 - 난곡 사랑의집 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-warning text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i data-feather="shield" class="me-2"></i>개인정보 동의서
+                    </h4>
+                    <div class="d-flex gap-2">
+                        {% if existing_consent %}
+                        <a href="{{ url_for('privacy_consent_pdf', learner_id=learner.id) }}" 
+                           class="btn btn-outline-dark btn-sm">
+                            <i data-feather="download" class="me-2"></i>PDF 다운로드
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" 
+                           class="btn btn-outline-dark btn-sm">
+                            <i data-feather="arrow-left" class="me-2"></i>돌아가기
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- 학습자 정보 -->
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="user" class="me-3" style="width: 24px; height: 24px;"></i>
+                        <div>
+                            <h6 class="mb-1">대상 학습자</h6>
+                            <strong>{{ learner.name }}</strong> ({{ learner.birth_date.strftime('%Y년 %m월 %d일') }}생)
+                        </div>
+                    </div>
+                </div>
+
+                {% if existing_consent %}
+                <div class="alert alert-success mb-4">
+                    <div class="d-flex align-items-center">
+                        <i data-feather="check-circle" class="me-3" style="width: 24px; height: 24px;"></i>
+                        <div>
+                            <h6 class="mb-1">동의서 작성 완료</h6>
+                            <small>{{ existing_consent.consent_date.strftime('%Y년 %m월 %d일') }}에 동의서가 작성되었습니다.</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 동의서 폼 -->
+                <form method="POST" id="consentForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- 동의서 내용 -->
+                    <div class="mb-4">
+                        <label for="{{ form.consent_content.id }}" class="form-label required">
+                            <i data-feather="file-text" class="me-2"></i>동의서 내용
+                        </label>
+                        <small class="text-muted d-block mb-2">
+                            아래 내용은 필요에 따라 수정하실 수 있습니다.
+                        </small>
+                        {{ form.consent_content(class="form-control", style="font-family: monospace;") }}
+                        {% if form.consent_content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.consent_content.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <!-- 동의 날짜 -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.consent_date.id }}" class="form-label required">
+                                <i data-feather="calendar" class="me-2"></i>동의 날짜
+                            </label>
+                            {{ form.consent_date(class="form-control") }}
+                            {% if form.consent_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.consent_date.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 동의자 이름 -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.consent_name.id }}" class="form-label required">
+                                <i data-feather="user" class="me-2"></i>동의자 이름
+                            </label>
+                            {{ form.consent_name(class="form-control") }}
+                            {% if form.consent_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.consent_name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 서명 영역 -->
+                    <div class="mb-4">
+                        <label class="form-label required">
+                            <i data-feather="edit-3" class="me-2"></i>디지털 서명
+                        </label>
+                        <small class="text-muted d-block mb-3">
+                            아래 영역에 마우스나 터치로 서명해주세요. 잘못 그린 경우 '지우기' 버튼을 눌러 다시 그리실 수 있습니다.
+                        </small>
+                        
+                        <div class="signature-container border rounded p-3 bg-light">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted">서명란</span>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearSignature">
+                                    <i data-feather="trash-2" class="me-1"></i>지우기
+                                </button>
+                            </div>
+                            <canvas id="signatureCanvas" width="600" height="200" 
+                                    style="border: 2px dashed #dee2e6; border-radius: 8px; background: white; cursor: crosshair; width: 100%; max-width: 600px;">
+                                브라우저에서 캔버스를 지원하지 않습니다.
+                            </canvas>
+                        </div>
+                        {{ form.signature_data() }}
+                    </div>
+
+                    <!-- 동의 체크박스 -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_agreed(class="form-check-input") }}
+                            <label class="form-check-label" for="{{ form.is_agreed.id }}">
+                                <i data-feather="check-square" class="me-2"></i>위 개인정보 수집 및 이용에 동의합니다.
+                            </label>
+                        </div>
+                        {% if form.is_agreed.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.is_agreed.errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 저장 버튼 -->
+                    <div class="d-flex justify-content-end gap-3">
+                        <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary">
+                            <i data-feather="x" class="me-2"></i>취소
+                        </a>
+                        {{ form.submit(class="btn btn-warning", id="submitBtn") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    const clearBtn = document.getElementById('clearSignature');
+    const signatureInput = document.getElementById('signature_data');
+    const form = document.getElementById('consentForm');
+    
+    let isDrawing = false;
+    let hasDrawn = false;
+    
+    // 캔버스 초기 설정
+    function setupCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * 2;  // High DPI
+        canvas.height = rect.height * 2;
+        ctx.scale(2, 2);
+        
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    }
+    
+    // 기존 서명 데이터 로드
+    function loadExistingSignature() {
+        const existingSignature = signatureInput.value;
+        if (existingSignature) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width/2, canvas.height/2);
+                hasDrawn = true;
+            };
+            img.src = existingSignature;
+        }
+    }
+    
+    // 마우스 이벤트
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // 터치 이벤트
+    canvas.addEventListener('touchstart', handleTouch);
+    canvas.addEventListener('touchmove', handleTouch);
+    canvas.addEventListener('touchend', stopDrawing);
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+    
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        hasDrawn = true;
+    }
+    
+    function stopDrawing() {
+        if (isDrawing) {
+            isDrawing = false;
+            saveSignature();
+        }
+    }
+    
+    function handleTouch(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                        e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    }
+    
+    function saveSignature() {
+        const dataURL = canvas.toDataURL('image/png');
+        signatureInput.value = dataURL;
+    }
+    
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        signatureInput.value = '';
+        hasDrawn = false;
+    }
+    
+    // 지우기 버튼
+    clearBtn.addEventListener('click', clearSignature);
+    
+    // 폼 제출 검증
+    form.addEventListener('submit', function(e) {
+        if (!hasDrawn && !signatureInput.value) {
+            e.preventDefault();
+            alert('서명을 입력해주세요.');
+            return false;
+        }
+        
+        if (hasDrawn) {
+            saveSignature();
+        }
+    });
+    
+    // 초기화
+    setupCanvas();
+    loadExistingSignature();
+    
+    // 창 크기 변경 시 캔버스 재설정
+    window.addEventListener('resize', function() {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        setupCanvas();
+        ctx.putImageData(imageData, 0, 0);
+    });
+});
+</script>
+
+<style>
+.signature-container {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+}
+
+.signature-container canvas {
+    transition: all 0.3s ease;
+}
+
+.signature-container canvas:hover {
+    border-color: var(--sky-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(135, 206, 235, 0.25);
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: var(--danger-color);
+}
+</style>
+{% endblock %}

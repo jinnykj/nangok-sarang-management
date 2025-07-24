@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}상담 기록 목록{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 fw-bold text-primary">
+                    <i data-feather="phone" class="me-2"></i>상담 기록 목록
+                </h1>
+                <p class="text-muted">전화번호별로 정리된 상담 기록</p>
+            </div>
+            <div>
+                <a href="{{ url_for('consultation_record') }}" class="btn btn-info btn-lg">
+                    <i data-feather="plus" class="me-2"></i>새 상담 기록
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label">
+                    <i data-feather="search" class="icon-sm me-1"></i>전화번호 또는 이름 검색
+                </label>
+                <input type="text" name="search" class="form-control" placeholder="검색할 전화번호 또는 이름을 입력하세요" value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search" class="icon-sm"></i> 검색
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-primary mb-2">
+                    <i data-feather="phone" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-primary">{{ consultation_groups.total }}</h4>
+                <p class="text-muted mb-0">총 상담자</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-success mb-2">
+                    <i data-feather="message-circle" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-success">
+                    {% set total_consultations = 0 %}
+                    {% for group in consultation_groups.items %}
+                        {% set total_consultations = total_consultations + group.count %}
+                    {% endfor %}
+                    {{ total_consultations }}
+                </h4>
+                <p class="text-muted mb-0">총 상담 건수</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Consultation List -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">상담 기록</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if consultation_groups.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>전화번호</th>
+                            <th>이름</th>
+                            <th>상담 횟수</th>
+                            <th>최근 상담일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for group in consultation_groups.items %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('consultation_detail', phone=group.phone) }}" class="text-decoration-none">
+                                    <i data-feather="phone" class="icon-sm me-1"></i>{{ group.phone }}
+                                </a>
+                            </td>
+                            <td>{{ group.name or '미등록' }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ group.count }}회</span>
+                            </td>
+                            <td>{{ group.latest_date.strftime('%Y년 %m월 %d일') if group.latest_date else '-' }}</td>
+                            <td>
+                                <a href="{{ url_for('consultation_detail', phone=group.phone) }}" class="btn btn-sm btn-outline-primary">
+                                    <i data-feather="eye" class="icon-sm"></i> 상세보기
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if consultation_groups.pages > 1 %}
+            <nav aria-label="상담 기록 페이지네이션" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if consultation_groups.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('consultation_list', page=consultation_groups.prev_num, search=search) }}">이전</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in consultation_groups.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != consultation_groups.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('consultation_list', page=page_num, search=search) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if consultation_groups.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('consultation_list', page=consultation_groups.next_num, search=search) }}">다음</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i data-feather="phone" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                <h5 class="text-muted">상담 기록이 없습니다</h5>
+                <p class="text-muted">새로운 상담 기록을 추가해보세요.</p>
+                <a href="{{ url_for('consultation_record') }}" class="btn btn-info">
+                    <i data-feather="plus" class="me-2"></i>상담 기록 추가
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

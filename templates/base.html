@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}난곡 사랑의집 관리 시스템{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center text-sky" href="{{ url_for('index') }}">
+                <i data-feather="book-open" class="me-2"></i>
+                <span class="fw-bold">난곡 사랑의집 관리 시스템</span>
+            </a>
+            
+            <div class="navbar-nav ms-auto d-flex flex-row">
+                <a class="nav-link px-3 text-center" href="{{ url_for('index') }}">
+                    <i data-feather="home" class="d-block mx-auto mb-1"></i>
+                    <small>대시보드</small>
+                </a>
+                <a class="nav-link px-3 text-center" href="{{ url_for('application') }}">
+                    <i data-feather="user-plus" class="d-block mx-auto mb-1"></i>
+                    <small>학습자 등록</small>
+                </a>
+                <a class="nav-link px-3 text-center" href="{{ url_for('learner_list') }}">
+                    <i data-feather="users" class="d-block mx-auto mb-1"></i>
+                    <small>학습자 관리</small>
+                </a>
+                <a class="nav-link px-3 text-center" href="{{ url_for('upload') }}">
+                    <i data-feather="upload" class="d-block mx-auto mb-1"></i>
+                    <small>엑셀 업로드</small>
+                    <span class="badge bg-warning text-dark" style="font-size: 0.6rem; margin-top: -2px;">구현 예정</span>
+                </a>
+                <a class="nav-link px-3 text-center" href="{{ url_for('dashboard') }}">
+                    <i data-feather="bar-chart-2" class="d-block mx-auto mb-1"></i>
+                    <small>통계 분석</small>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                <i data-feather="{{ 'alert-circle' if category == 'error' else 'info' if category == 'info' else 'check-circle' }}" class="icon-sm me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-4 mt-5" style="border-top: 2px solid var(--border-color) !important;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <small class="text-muted">
+                        <i data-feather="heart" class="me-2" style="color: var(--sky-color);"></i>
+                        난곡 사랑의집 학습자 지원을 위한 종합 관리 플랫폼
+                        <span class="ms-3">|</span>
+                        <a href="{{ url_for('admin_login') }}" class="text-muted text-decoration-none ms-3">
+                            <i data-feather="settings" style="width: 14px; height: 14px;" class="me-1"></i>
+                            관리자 모드
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Initialize Feather Icons -->
+    <script>
+        feather.replace();
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

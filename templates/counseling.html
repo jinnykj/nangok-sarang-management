@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}상담 기록 - {{ learner.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i data-feather="user" class="me-2"></i>학습자 정보
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="learner-summary">
+                        <div class="mb-2">
+                            <strong>이름:</strong> {{ learner.name }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>연락처:</strong> {{ learner.phone }}
+                        </div>
+                        <div class="mb-2">
+                            <strong>현재 상태:</strong>
+                            <span class="badge bg-{{ 'success' if learner.status == '수강중' else 'warning' }}">
+                                {{ learner.status }}
+                            </span>
+                        </div>
+                        {% if learner.assigned_class %}
+                            <div class="mb-2">
+                                <strong>배정 반:</strong> {{ learner.assigned_class }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i data-feather="message-circle" class="me-2"></i>상담 기록 작성
+                    </h4>
+                    <div class="mt-2">
+                        <p class="mb-0 text-light">
+                            {% if learner.counseling_records %}
+                                이전 상담 기록: {{ learner.counseling_records|length }}회
+                            {% else %}
+                                첫 번째 상담 기록입니다.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            {{ form.counselor_name.label(class="form-label required") }}
+                            {{ form.counselor_name(class="form-control form-control-lg", placeholder="상담을 진행하는 선생님 이름") }}
+                            {% if form.counselor_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.counselor_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.counseling_content.label(class="form-label required") }}
+                            
+                            <!-- 음성 인식 버튼 영역 -->
+                            <div class="voice-recording-controls mb-3">
+                                <div class="d-flex gap-2 mb-2">
+                                    <button type="button" id="startRecording" class="btn btn-outline-danger">
+                                        <i data-feather="mic" class="me-1"></i>음성 녹음 시작
+                                    </button>
+                                    <button type="button" id="stopRecording" class="btn btn-outline-secondary" disabled>
+                                        <i data-feather="mic-off" class="me-1"></i>녹음 중지 (자동 변환)
+                                    </button>
+                                    <button type="button" id="summarizeVoice" class="btn btn-outline-success" disabled>
+                                        <i data-feather="zap" class="me-1"></i>AI 요약 생성
+                                    </button>
+                                </div>
+                                
+                                <!-- 녹음 상태 표시 -->
+                                <div id="recordingStatus" class="alert alert-info d-none" role="alert">
+                                    <i data-feather="mic" class="me-2"></i>
+                                    <span id="recordingTime">00:00</span> - 음성을 녹음중입니다...
+                                </div>
+                                
+                                <!-- 변환된 텍스트 미리보기 -->
+                                <div id="transcriptionPreview" class="alert alert-light d-none">
+                                    <h6><i data-feather="headphones" class="me-2"></i>변환된 텍스트:</h6>
+                                    <div id="transcriptionText"></div>
+                                    <div class="mt-2">
+                                        <button type="button" id="addToContent" class="btn btn-sm btn-primary">
+                                            <i data-feather="plus" class="me-1"></i>상담 내용에 추가
+                                        </button>
+                                        <button type="button" id="clearTranscription" class="btn btn-sm btn-outline-secondary">
+                                            <i data-feather="x" class="me-1"></i>삭제
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- AI 요약 결과 -->
+                                <div id="aiSummaryResult" class="alert alert-success d-none">
+                                    <h6><i data-feather="zap" class="me-2"></i>AI 상담 요약:</h6>
+                                    <div id="summaryContent"></div>
+                                    <div class="mt-2">
+                                        <button type="button" id="applySummary" class="btn btn-sm btn-success">
+                                            <i data-feather="check" class="me-1"></i>요약 적용
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {{ form.counseling_content(class="form-control", rows="8", placeholder="상담 진행 내용을 자세히 기록해주세요. 음성 녹음 기능을 활용하실 수 있습니다.") }}
+                            <div class="form-text">학습자의 현재 상황, 어려움, 목표 등을 포함해주세요</div>
+                            {% if form.counseling_content.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.counseling_content.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.recommendations.label(class="form-label") }}
+                            {{ form.recommendations(class="form-control", rows="4", placeholder="학습자에게 제공할 권장사항이나 조언을 입력하세요") }}
+                            <div class="form-text">학습 방법, 목표 설정, 추가 지원 방안 등</div>
+                            {% if form.recommendations.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.recommendations.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-1"></i>학습자 상세로 돌아가기
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="save" class="me-1"></i>상담 기록 저장
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/feather-icons"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+});
+
+// learner ID를 JavaScript에서 사용할 수 있도록 설정
+window.learnerId = {{ learner.id }};
+
+// Feather icons
+feather.replace();
+</script>
+
+<!-- 별도 JavaScript 파일로 음성 녹음 기능 로드 -->
+<script src="/static/js/voice-recording.js"></script>
+{% endblock %}

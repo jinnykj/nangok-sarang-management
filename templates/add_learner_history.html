@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}이력 추가 - {{ learner.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">
+                        <i data-feather="plus" class="me-2"></i>{{ learner.name }} 이력 추가
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.event_type.label(class="form-label") }}
+                                <span class="text-danger">*</span>
+                                {{ form.event_type(class="form-select") }}
+                                {% if form.event_type.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.event_type.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.event_date.label(class="form-label") }}
+                                <span class="text-danger">*</span>
+                                {{ form.event_date(class="form-control") }}
+                                {% if form.event_date.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.event_date.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.event_title.label(class="form-label") }}
+                            <span class="text-danger">*</span>
+                            {{ form.event_title(class="form-control") }}
+                            {% if form.event_title.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.event_title.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.event_description.label(class="form-label") }}
+                            {{ form.event_description(class="form-control") }}
+                            {% if form.event_description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.event_description.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.previous_value.label(class="form-label") }}
+                                {{ form.previous_value(class="form-control") }}
+                                {% if form.previous_value.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.previous_value.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.new_value.label(class="form-label") }}
+                                {{ form.new_value(class="form-control") }}
+                                {% if form.new_value.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.new_value.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.created_by.label(class="form-label") }}
+                            {{ form.created_by(class="form-control") }}
+                            {% if form.created_by.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.created_by.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary">
+                                <i data-feather="x" class="me-2"></i>취소
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 이벤트 유형에 따른 필드 제안
+document.addEventListener('DOMContentLoaded', function() {
+    const eventTypeSelect = document.getElementById('event_type');
+    const eventTitleInput = document.getElementById('event_title');
+    const previousValueInput = document.getElementById('previous_value');
+    const newValueInput = document.getElementById('new_value');
+    
+    eventTypeSelect.addEventListener('change', function() {
+        const selectedType = this.value;
+        
+        // 제안 텍스트
+        const suggestions = {
+            'enrollment': {
+                title: '입학',
+                description: '{{ learner.name }}님이 입학하였습니다.'
+            },
+            'graduation_certification': {
+                title: '학력인증',
+                description: '학력인증을 완료하였습니다.'
+            },
+            'level_test': {
+                title: '레벨테스트',
+                description: '레벨테스트를 실시하였습니다.'
+            },
+            'counseling': {
+                title: '상담',
+                description: '개별 상담을 진행하였습니다.'
+            },
+            'class_assignment': {
+                title: '반 배정',
+                description: '반 배정이 변경되었습니다.'
+            },
+            'academic_status': {
+                title: '학적상태변경',
+                description: '학적상태가 변경되었습니다.'
+            },
+            'achievement': {
+                title: '성취/수료',
+                description: '과정을 수료하였습니다.'
+            }
+        };
+        
+        if (suggestions[selectedType] && !eventTitleInput.value) {
+            eventTitleInput.value = suggestions[selectedType].title;
+        }
+    });
+});
+</script>
+{% endblock %}

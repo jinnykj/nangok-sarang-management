@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block title %}지원서 작성 - 난곡 사랑의집 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Progress Indicator -->
+        <div class="card border-sky shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="step-item active">
+                        <div class="step-circle">
+                            <i data-feather="edit" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">지원서 작성</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">
+                            <i data-feather="book" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">레벨 테스트</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">
+                            <i data-feather="message-circle" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">상담</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">
+                            <i data-feather="users" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">반 배정</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Form -->
+        <div class="card border-0 shadow">
+            <div class="card-header bg-sky text-white">
+                <h4 class="card-title mb-2">
+                    <i data-feather="edit" class="me-2"></i>
+                    난곡 사랑의집 학습자 지원서
+                </h4>
+                <p class="card-subtitle mb-0 opacity-75">학습자의 기본 정보, 학습 배경, 건강 상태를 체계적으로 수집합니다.</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- 1. 기본 인적사항 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="user" class="me-2"></i>1. 기본 인적사항
+                        </h5>
+                        <p class="text-muted">학습자의 기본 정보를 입력해주세요.</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.name.label(class="form-label required") }}
+                            {{ form.name(class="form-control form-control-lg", placeholder="이름") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.birth_date.label(class="form-label required") }}
+                            {{ form.birth_date(class="form-control form-control-lg") }}
+                            {% if form.birth_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.birth_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.gender.label(class="form-label required") }}
+                            <div class="mt-2">
+                                {% for subfield in form.gender %}
+                                    <div class="form-check form-check-inline">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.gender.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.gender.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            {{ form.phone.label(class="form-label required") }}
+                            {{ form.phone(class="form-control form-control-lg", placeholder="010-0000-0000") }}
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.phone.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.address.label(class="form-label required") }}
+                        {{ form.address(class="form-control form-control-lg", rows="3", placeholder="도로명 주소 또는 자택 설명") }}
+                        <div class="form-text">{{ form.address.description }}</div>
+                        {% if form.address.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.address.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 2. 비상연락처 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="phone" class="me-2"></i>2. 비상연락처
+                        </h5>
+                        <p class="text-muted">응급상황 시 연락할 수 있는 분의 정보를 입력해주세요.</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ form.emergency_contact1_name.label(class="form-label required") }}
+                            {{ form.emergency_contact1_name(class="form-control form-control-lg", placeholder="이름") }}
+                            {% if form.emergency_contact1_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.emergency_contact1_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.emergency_contact1_relation.label(class="form-label required") }}
+                            {{ form.emergency_contact1_relation(class="form-control form-control-lg", placeholder="아들, 딸, 형제 등") }}
+                            {% if form.emergency_contact1_relation.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.emergency_contact1_relation.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.emergency_contact1_phone.label(class="form-label required") }}
+                            {{ form.emergency_contact1_phone(class="form-control form-control-lg", placeholder="010-0000-0000") }}
+                            {% if form.emergency_contact1_phone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.emergency_contact1_phone.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {{ form.emergency_contact2_name.label(class="form-label") }}
+                            {{ form.emergency_contact2_name(class="form-control form-control-lg", placeholder="이름 (선택사항)") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.emergency_contact2_relation.label(class="form-label") }}
+                            {{ form.emergency_contact2_relation(class="form-control form-control-lg", placeholder="관계 (선택사항)") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.emergency_contact2_phone.label(class="form-label") }}
+                            {{ form.emergency_contact2_phone(class="form-control form-control-lg", placeholder="전화번호 (선택사항)") }}
+                        </div>
+                    </div>
+
+                    <!-- 3. 건강 상태 및 학습 배경 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="heart" class="me-2"></i>3. 건강 상태 및 학습 배경
+                        </h5>
+                        <p class="text-muted">효과적인 학습 지원을 위해 건강 상태와 학습 배경을 확인합니다.</p>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.health_status.label(class="form-label required") }}
+                            <div class="mt-2">
+                                {% for subfield in form.health_status %}
+                                    <div class="form-check">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.health_status.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.health_status.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.health_details.label(class="form-label") }}
+                            {{ form.health_details(class="form-control form-control-lg", placeholder="질환이 있으시면 구체적으로 적어주세요") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.surgery_experience.label(class="form-label required") }}
+                            <div class="mt-2">
+                                {% for subfield in form.surgery_experience %}
+                                    <div class="form-check form-check-inline">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.surgery_experience.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.surgery_experience.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.surgery_details.label(class="form-label") }}
+                            {{ form.surgery_details(class="form-control form-control-lg", placeholder="수술 내용을 간단히 적어주세요") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {{ form.learning_experience.label(class="form-label required") }}
+                            <div class="mt-2">
+                                {% for subfield in form.learning_experience %}
+                                    <div class="form-check">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.learning_experience.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.learning_experience.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.learning_institution.label(class="form-label") }}
+                            {{ form.learning_institution(class="form-control form-control-lg", placeholder="기관명") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.learning_period.label(class="form-label") }}
+                            {{ form.learning_period(class="form-control form-control-lg", placeholder="기간 (예: 6개월)") }}
+                        </div>
+                    </div>
+
+                    <!-- 4. 입학 경로 및 학습 목적 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="target" class="me-2"></i>4. 입학 경로 및 학습 목적
+                        </h5>
+                        <p class="text-muted">어떻게 알게 되셨는지, 학습 목적을 확인합니다.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            {{ form.enrollment_path.label(class="form-label required") }}
+                            {{ form.enrollment_path(class="form-select form-control-lg") }}
+                            {% if form.enrollment_path.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.enrollment_path.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.learning_purpose.label(class="form-label required") }}
+                            {{ form.learning_purpose(class="form-select form-control-lg") }}
+                            {% if form.learning_purpose.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.learning_purpose.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 5. 기초 진단 평가 (자기평가) -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="clipboard" class="me-2"></i>5. 기초 진단 평가 (자기평가)
+                        </h5>
+                        <p class="text-muted">현재 본인의 읽기, 쓰기, 수학 수준을 솔직하게 평가해주세요.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {{ form.reading_level.label(class="form-label required") }}
+                            {{ form.reading_level(class="form-select form-control-lg") }}
+                            {% if form.reading_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.reading_level.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.writing_level.label(class="form-label required") }}
+                            {{ form.writing_level(class="form-select form-control-lg") }}
+                            {% if form.writing_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.writing_level.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.math_level.label(class="form-label required") }}
+                            {{ form.math_level(class="form-select form-control-lg") }}
+                            {% if form.math_level.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.math_level.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 6. 추가 정보 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="message-square" class="me-2"></i>6. 추가 정보
+                        </h5>
+                        <p class="text-muted">추가로 전달하고 싶은 내용이 있으시면 자유롭게 적어주세요.</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.other_info.label(class="form-label") }}
+                        {{ form.other_info(class="form-control form-control-lg", rows="4", placeholder="학습에 대한 기대, 어려움, 특별한 요청사항 등을 자유롭게 적어주세요") }}
+                        <div class="form-text">{{ form.other_info.description }}</div>
+                    </div>
+
+                    <!-- 7. 개인정보 동의 및 서명 -->
+                    <div class="section-header mb-4">
+                        <h5 class="text-sky">
+                            <i data-feather="shield-check" class="me-2"></i>7. 개인정보 수집 및 이용 동의
+                        </h5>
+                        <p class="text-muted">개인정보 처리방침을 확인하시고 동의해주세요.</p>
+                    </div>
+                    
+                    <!-- 개인정보 처리방침 -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">개인정보 수집 및 이용 동의서</h6>
+                            <div class="privacy-policy-content" style="max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid #dee2e6; border-radius: 5px; background: white;">
+                                <h6>1. 개인정보 수집 목적</h6>
+                                <p>성인 문해교육 서비스 제공, 학습자 관리, 상담 및 교육과정 운영</p>
+                                
+                                <h6>2. 수집하는 개인정보 항목</h6>
+                                <p>이름, 생년월일, 성별, 연락처, 주소, 비상연락처, 건강상태, 학습배경 등</p>
+                                
+                                <h6>3. 개인정보 보유 및 이용기간</h6>
+                                <p>교육과정 종료 후 3년간 보관 (단, 법령에 따라 보관이 필요한 경우 해당 기간까지)</p>
+                                
+                                <h6>4. 개인정보 제3자 제공</h6>
+                                <p>수집된 개인정보는 원칙적으로 제3자에게 제공하지 않습니다.</p>
+                                
+                                <h6>5. 개인정보 처리 거부권</h6>
+                                <p>귀하는 개인정보 수집 및 이용 동의를 거부할 권리가 있으나, 동의하지 않을 경우 교육 서비스 이용이 제한될 수 있습니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 동의 체크박스 -->
+                    <div class="mb-4">
+                        <div class="form-check form-check-lg">
+                            {{ form.privacy_consent(class="form-check-input", required="required") }}
+                            {{ form.privacy_consent.label(class="form-check-label required") }}
+                            {% if form.privacy_consent.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.privacy_consent.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- 디지털 서명 -->
+                    <div class="mb-4">
+                        <label class="form-label required">디지털 서명</label>
+                        <div class="signature-container border rounded p-3 bg-white">
+                            <div class="text-center mb-3">
+                                <small class="text-muted">아래 서명란에 마우스나 터치로 서명해주세요</small>
+                            </div>
+                            <div class="signature-pad-container text-center">
+                                <canvas id="signatureCanvas" width="500" height="150" 
+                                        style="border: 2px dashed #dee2e6; border-radius: 8px; max-width: 100%; cursor: crosshair;">
+                                    서명 기능을 지원하지 않는 브라우저입니다.
+                                </canvas>
+                            </div>
+                            <div class="signature-controls mt-3 text-center">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearSignature()">
+                                    <i data-feather="trash-2" class="me-1"></i>지우기
+                                </button>
+                                <small class="text-muted ms-3">서명이 완료되면 자동으로 저장됩니다</small>
+                            </div>
+                        </div>
+                        {{ form.signature_data() }}
+                        <div class="form-text">본인이 직접 서명함으로써 위 개인정보 수집 및 이용에 동의함을 확인합니다.</div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between pt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
+                            <i data-feather="arrow-left" class="me-2"></i>메인으로
+                        </a>
+                        <button type="submit" class="btn btn-sky btn-lg">
+                            지원서 제출 <i data-feather="arrow-right" class="ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/signature-pad.js') }}"></script>
+<script>
+// Form validation enhancement
+(function() {
+    'use strict';
+    
+    // Add Bootstrap validation
+    var forms = document.querySelectorAll('.needs-validation');
+    
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Auto-format phone numbers
+    function formatPhoneNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        let formattedValue = '';
+        
+        if (value.length > 0) {
+            if (value.length <= 3) {
+                formattedValue = value;
+            } else if (value.length <= 7) {
+                formattedValue = value.slice(0, 3) + '-' + value.slice(3);
+            } else {
+                formattedValue = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+            }
+        }
+        
+        input.value = formattedValue;
+    }
+    
+    // Apply phone formatting
+    document.querySelectorAll('input[placeholder*="010"], input[placeholder*="02-"]').forEach(function(input) {
+        input.addEventListener('input', function() {
+            formatPhoneNumber(this);
+        });
+    });
+
+    // Show/hide conditional fields
+    function toggleConditionalFields() {
+        // Health details
+        const healthStatus = document.querySelector('input[name="health_status"]:checked');
+        const healthDetails = document.querySelector('#health_details');
+        if (healthDetails) {
+            healthDetails.closest('.col-md-6').style.display = 
+                (healthStatus && healthStatus.value === '질환') ? 'block' : 'none';
+        }
+
+        // Surgery details
+        const surgeryExp = document.querySelector('input[name="surgery_experience"]:checked');
+        const surgeryDetails = document.querySelector('#surgery_details');
+        if (surgeryDetails) {
+            surgeryDetails.closest('.col-md-6').style.display = 
+                (surgeryExp && surgeryExp.value === '있음') ? 'block' : 'none';
+        }
+
+        // Learning experience details
+        const learningExp = document.querySelector('input[name="learning_experience"]:checked');
+        const institutionField = document.querySelector('#learning_institution');
+        const periodField = document.querySelector('#learning_period');
+        const showLearning = learningExp && learningExp.value === '있음';
+        
+        if (institutionField) {
+            institutionField.closest('.col-md-4').style.display = showLearning ? 'block' : 'none';
+        }
+        if (periodField) {
+            periodField.closest('.col-md-4').style.display = showLearning ? 'block' : 'none';
+        }
+    }
+
+    // Listen for radio button changes
+    document.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener('change', toggleConditionalFields);
+    });
+
+    // Initial toggle
+    toggleConditionalFields();
+})();
+</script>
+{% endblock %}

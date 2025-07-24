@@ -1,0 +1,117 @@
+{% extends "admin/base.html" %}
+
+{% block title %}콘텐츠 관리 - 관리자 모드{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">콘텐츠 관리</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card admin-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="file-text" class="me-2"></i>
+                    페이지 콘텐츠 편집
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.page_type.label(class="form-label") }}
+                            {{ form.page_type(class="form-select", onchange="this.form.submit()") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                {{ form.is_active(class="form-check-input") }}
+                                {{ form.is_active.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.content.label(class="form-label") }}
+                        {{ form.content(class="form-control", style="font-family: monospace;") }}
+                        <div class="form-text">HTML 태그를 사용할 수 있습니다.</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        {{ form.save_content(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card admin-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    기존 페이지
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if pages %}
+                    <div class="list-group list-group-flush">
+                        {% for page in pages %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ page.title }}</h6>
+                                <small class="text-muted">{{ page.page_type }}</small>
+                            </div>
+                            <div>
+                                {% if page.is_active %}
+                                    <span class="badge bg-success">활성</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">비활성</span>
+                                {% endif %}
+                                <a href="{{ url_for('admin_content', page_type=page.page_type) }}" 
+                                   class="btn btn-sm btn-outline-primary ms-2">
+                                    <i data-feather="edit" style="width: 14px; height: 14px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">저장된 페이지가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card admin-card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i data-feather="help-circle" class="me-2"></i>
+                    도움말
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>페이지 유형</h6>
+                <ul class="small">
+                    <li><strong>개인정보처리방침:</strong> 개인정보 수집/이용 정책</li>
+                    <li><strong>이용약관:</strong> 서비스 이용 규칙</li>
+                    <li><strong>메인 페이지 내용:</strong> 홈페이지 환영 메시지</li>
+                    <li><strong>도움말:</strong> 사용자 가이드</li>
+                </ul>
+                
+                <h6 class="mt-3">HTML 사용</h6>
+                <p class="small">
+                    기본적인 HTML 태그를 사용하여 텍스트 서식을 지정할 수 있습니다.
+                    예: &lt;h3&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt; 등
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

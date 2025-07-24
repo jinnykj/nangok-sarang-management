@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}반 배정 변경 - {{ learner.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="users" class="me-2"></i>반 배정 변경
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h6 class="text-muted">{{ learner.name }}의 배정반을 변경합니다</h6>
+                        <p class="text-muted small">현재 배정반: 
+                            {% if learner.class_name %}
+                                {% if learner.class_name == '기쁨반' %}
+                                    <span class="badge bg-primary">{{ learner.class_name }}</span>
+                                {% elif learner.class_name == '은혜반' %}
+                                    <span class="badge bg-success">{{ learner.class_name }}</span>
+                                {% elif learner.class_name == '지혜반' %}
+                                    <span class="badge bg-info">{{ learner.class_name }}</span>
+                                {% elif learner.class_name == '바다반' %}
+                                    <span class="badge bg-warning">{{ learner.class_name }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ learner.class_name }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">미배정</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            {{ form.class_name.label(class="form-label fw-bold") }}
+                            {{ form.class_name(class="form-select") }}
+                            {% if form.class_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.class_name.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">반을 선택하지 않으면 미배정 상태가 됩니다.</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary">
+                                <i data-feather="x" class="me-2"></i>취소
+                            </a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

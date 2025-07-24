@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}반 배정 완료 - 성인 문해교육 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Progress Indicator -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">지원서 작성</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">레벨 테스트</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">상담</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">반 배정</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Header -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i data-feather="check-circle" class="text-success" style="width: 80px; height: 80px;"></i>
+                </div>
+                <h2 class="text-primary mb-3">등록이 완료되었습니다!</h2>
+                <p class="text-muted fs-5">{{ learner.name }}님의 학습 여정이 시작됩니다.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Assignment Result -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="users" class="me-2"></i>반 배정 결과
+                        </h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="class-assignment-result mb-4">
+                            {% if learner.assigned_class == '예비 중등반' %}
+                                <div class="class-badge bg-success text-white">
+                                    <i data-feather="award" class="mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h4>{{ learner.assigned_class }}</h4>
+                                </div>
+                                <p class="text-muted mt-3">우수한 성적으로 예비 중등반에 배정되었습니다.</p>
+                            {% elif learner.assigned_class == '초등 고급반' %}
+                                <div class="class-badge bg-info text-white">
+                                    <i data-feather="star" class="mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h4>{{ learner.assigned_class }}</h4>
+                                </div>
+                                <p class="text-muted mt-3">좋은 기초 실력으로 고급반에 배정되었습니다.</p>
+                            {% elif learner.assigned_class == '초등 중급반' %}
+                                <div class="class-badge bg-warning text-white">
+                                    <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h4>{{ learner.assigned_class }}</h4>
+                                </div>
+                                <p class="text-muted mt-3">기본 실력을 바탕으로 중급반에서 학습합니다.</p>
+                            {% else %}
+                                <div class="class-badge bg-primary text-white">
+                                    <i data-feather="book-open" class="mb-2" style="width: 48px; height: 48px;"></i>
+                                    <h4>{{ learner.assigned_class }}</h4>
+                                </div>
+                                <p class="text-muted mt-3">기초부터 차근차근 학습을 시작합니다.</p>
+                            {% endif %}
+                        </div>
+                        
+                        {% if level_test %}
+                        <div class="score-summary">
+                            <h6 class="text-primary mb-3">레벨 테스트 점수</h6>
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="score-item">
+                                        <div class="score-circle small bg-light">{{ level_test.vocabulary_score }}</div>
+                                        <small class="text-muted">어휘</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="score-item">
+                                        <div class="score-circle small bg-light">{{ level_test.grammar_score }}</div>
+                                        <small class="text-muted">문법</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="score-item">
+                                        <div class="score-circle small bg-light">{{ level_test.reading_score }}</div>
+                                        <small class="text-muted">독해</small>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="score-item">
+                                        <div class="score-circle small bg-primary text-white">{{ level_test.total_score }}</div>
+                                        <small class="text-muted">총점</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learner Information Summary -->
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="user" class="me-2"></i>학습자 정보
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="learner-summary">
+                            <div class="info-row">
+                                <strong>이름:</strong> {{ learner.name }}
+                            </div>
+                            <div class="info-row">
+                                <strong>생년월일:</strong> {{ learner.birth_date.strftime('%Y년 %m월 %d일') }}
+                            </div>
+                            <div class="info-row">
+                                <strong>연락처:</strong> {{ learner.phone }}
+                            </div>
+                            {% if learner.email %}
+                            <div class="info-row">
+                                <strong>이메일:</strong> {{ learner.email }}
+                            </div>
+                            {% endif %}
+                            <div class="info-row">
+                                <strong>최종학력:</strong> {{ learner.education_background }}
+                            </div>
+                            <div class="info-row">
+                                <strong>등록일:</strong> {{ learner.created_at.strftime('%Y년 %m월 %d일') }}
+                            </div>
+                            <div class="info-row">
+                                <strong>상태:</strong> 
+                                <span class="badge bg-success">{{ learner.status }}</span>
+                            </div>
+                        </div>
+
+                        {% if counseling %}
+                        <hr>
+                        <div class="counseling-summary">
+                            <h6 class="text-primary">상담 요약</h6>
+                            <div class="info-row">
+                                <strong>상담사:</strong> {{ counseling.counselor_name }}
+                            </div>
+                            {% if counseling.recommendations %}
+                            <div class="info-row">
+                                <strong>추천사항:</strong>
+                                <p class="text-muted small mt-1">{{ counseling.recommendations }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i data-feather="compass" class="me-2"></i>다음 단계 안내
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <div class="step-icon bg-primary text-white">
+                                        <i data-feather="calendar"></i>
+                                    </div>
+                                    <h6>수업 일정 확인</h6>
+                                    <p class="text-muted small">배정받은 반의 수업 일정과 장소를 확인해주세요.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <div class="step-icon bg-info text-white">
+                                        <i data-feather="book"></i>
+                                    </div>
+                                    <h6>교재 준비</h6>
+                                    <p class="text-muted small">수업에 필요한 교재와 학습 자료를 준비해주세요.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="next-step-item">
+                                    <div class="step-icon bg-success text-white">
+                                        <i data-feather="users"></i>
+                                    </div>
+                                    <h6>첫 수업 참석</h6>
+                                    <p class="text-muted small">정해진 시간에 수업에 참석하여 학습을 시작해주세요.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-primary btn-lg me-2">
+                        <i data-feather="user" class="me-2"></i>학습자 프로필 보기
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-2">
+                        <i data-feather="home" class="me-2"></i>대시보드로 이동
+                    </a>
+                    <a href="{{ url_for('application') }}" class="btn btn-outline-success btn-lg">
+                        <i data-feather="user-plus" class="me-2"></i>새 학습자 등록
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Feather icons
+feather.replace();
+
+// Print functionality
+function printResult() {
+    window.print();
+}
+
+// Show success animation
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        document.querySelector('.card').classList.add('animate__animated', 'animate__fadeInUp');
+    }, 500);
+});
+</script>
+{% endblock %}

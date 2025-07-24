@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드 - 난곡 사랑의집 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="text-center">
+            <h1 class="h1 fw-bold text-sky mb-3">
+                <i data-feather="home" class="me-3"></i>난곡 사랑의집 관리 시스템
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-5">
+    <div class="col-md-6 offset-md-3">
+        <div class="row">
+            <div class="col-6">
+                <div class="card border-sky shadow h-100">
+                    <div class="card-body text-center py-4">
+                        <div class="text-sky mb-3">
+                            <i data-feather="users" style="width: 64px; height: 64px;"></i>
+                        </div>
+                        <h2 class="fw-bold text-sky mb-1">{{ total_learners }}</h2>
+                        <h6 class="text-muted mb-0">총 학습자 수</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card border-sky shadow h-100">
+                    <div class="card-body text-center py-4">
+                        <div class="text-warning mb-3">
+                            <i data-feather="clock" style="width: 64px; height: 64px;"></i>
+                        </div>
+                        <h2 class="fw-bold text-warning mb-1">{{ pending_counseling or 0 }}</h2>
+                        <h6 class="text-muted mb-0">상담 대기</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Action Cards -->
+<div class="row">
+    <!-- New Application -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+            <div class="card-body text-center py-5">
+                <div class="text-sky mb-4">
+                    <i data-feather="user-plus" style="width: 80px; height: 80px;"></i>
+                </div>
+                <h4 class="fw-bold text-sky mb-3">지원서 작성</h4>
+                <p class="text-muted mb-4">새로운 학습자의 지원서를 작성하고 레벨 테스트를 진행합니다.</p>
+                <a href="{{ url_for('application') }}" class="btn btn-sky btn-lg">
+                    시작하기
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learner Management -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+            <div class="card-body text-center py-5">
+                <div class="text-success mb-4">
+                    <i data-feather="database" style="width: 80px; height: 80px;"></i>
+                </div>
+                <h4 class="fw-bold text-success mb-3">학습자 관리</h4>
+                <p class="text-muted mb-4">등록된 학습자들의 정보를 조회하고 관리합니다.</p>
+                <a href="{{ url_for('learner_list') }}" class="btn btn-success btn-lg">
+                    관리하기
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Dashboard -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+            <div class="card-body text-center py-5">
+                <div class="text-primary mb-4">
+                    <i data-feather="bar-chart-2" style="width: 80px; height: 80px;"></i>
+                </div>
+                <h4 class="fw-bold text-primary mb-3">통계 대시보드</h4>
+                <p class="text-muted mb-4">학습자 현황과 성과를 차트와 그래프로 확인합니다.</p>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    대시보드
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Consultation Record -->
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm h-100 hover-card">
+            <div class="card-body text-center py-5">
+                <div class="text-info mb-4">
+                    <i data-feather="phone" style="width: 80px; height: 80px;"></i>
+                </div>
+                <h4 class="fw-bold text-info mb-3">상담 기록</h4>
+                <p class="text-muted mb-4">전화 상담 내용을 간편하게 기록하고 관리합니다.</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('consultation_record') }}" class="btn btn-info btn-lg">
+                        <i data-feather="plus" class="me-2"></i>상담 기록 작성
+                    </a>
+                    <a href="{{ url_for('consultation_list') }}" class="btn btn-outline-info">
+                        <i data-feather="list" class="me-2"></i>기록 목록 보기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

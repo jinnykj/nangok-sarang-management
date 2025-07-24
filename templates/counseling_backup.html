@@ -1,0 +1,630 @@
+{% extends "base.html" %}
+
+{% block title %}상담 - 성인 문해교육 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Progress Indicator -->
+        {% if not is_additional %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">지원서 작성</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">
+                            <i data-feather="check" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">레벨 테스트</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item active">
+                        <div class="step-circle">
+                            <i data-feather="message-circle" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">상담</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">
+                            <i data-feather="users" class="icon-sm"></i>
+                        </div>
+                        <span class="step-text">반 배정</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Learner Information -->
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="card-title mb-0">
+                            <i data-feather="user" class="me-2"></i>학습자 정보
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="learner-info">
+                            <div class="info-item">
+                                <strong>이름:</strong> {{ learner.name }}
+                            </div>
+                            <div class="info-item">
+                                <strong>생년월일:</strong> {{ learner.birth_date.strftime('%Y년 %m월 %d일') }}
+                            </div>
+                            <div class="info-item">
+                                <strong>연락처:</strong> {{ learner.phone }}
+                            </div>
+                            {% if learner.email %}
+                            <div class="info-item">
+                                <strong>이메일:</strong> {{ learner.email }}
+                            </div>
+                            {% endif %}
+                            <div class="info-item">
+                                <strong>최종학력:</strong> {{ learner.education_background }}
+                            </div>
+                            <div class="info-item">
+                                <strong>학습동기:</strong> 
+                                <p class="text-muted small mt-1">{{ learner.motivation }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if level_test and not is_additional %}
+                <!-- Test Results -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h6 class="card-title mb-0">
+                            <i data-feather="bar-chart" class="me-2"></i>레벨 테스트 결과
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="score-circle mb-2">
+                                <span class="score-number">{{ level_test.total_score }}</span>
+                                <span class="score-text">점</span>
+                            </div>
+                            <p class="text-muted">총점</p>
+                        </div>
+                        
+                        <div class="score-breakdown">
+                            <div class="score-item">
+                                <span class="score-label">어휘:</span>
+                                <span class="score-value">{{ level_test.vocabulary_score }}점</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">문법:</span>
+                                <span class="score-value">{{ level_test.grammar_score }}점</span>
+                            </div>
+                            <div class="score-item">
+                                <span class="score-label">독해:</span>
+                                <span class="score-value">{{ level_test.reading_score }}점</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <h6 class="text-primary">예상 배정반:</h6>
+                            {% if level_test.total_score >= 80 %}
+                                <span class="badge bg-success fs-6">예비 중등반</span>
+                            {% elif level_test.total_score >= 60 %}
+                                <span class="badge bg-info fs-6">초등 고급반</span>
+                            {% elif level_test.total_score >= 40 %}
+                                <span class="badge bg-warning fs-6">초등 중급반</span>
+                            {% else %}
+                                <span class="badge bg-primary fs-6">초등 초급반</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Counseling Form -->
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="card-title mb-0">
+                            <i data-feather="message-circle" class="me-2"></i>
+                            {% if is_additional %}추가 상담 기록{% else %}3단계: 상담{% endif %}
+                        </h4>
+                        <p class="card-subtitle mb-0 opacity-75">
+                            {% if is_additional %}
+                                {{ learner.name }}님의 추가 상담을 진행합니다
+                            {% else %}
+                                학습자와의 상담 내용을 기록하고 학습 계획을 수립합니다
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" class="needs-validation" novalidate>
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="mb-4">
+                                {{ form.counselor_name.label(class="form-label required") }}
+                                {{ form.counselor_name(class="form-control form-control-lg", placeholder="상담을 진행하는 선생님 이름") }}
+                                {% if form.counselor_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.counselor_name.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.counseling_content.label(class="form-label required") }}
+                                
+                                <!-- 음성 인식 버튼 영역 -->
+                                <div class="voice-recording-controls mb-3">
+                                    <div class="d-flex gap-2 mb-2">
+                                        <button type="button" id="startRecording" class="btn btn-outline-danger">
+                                            <i data-feather="mic" class="me-1"></i>음성 녹음 시작
+                                        </button>
+                                        <button type="button" id="stopRecording" class="btn btn-outline-secondary" disabled>
+                                            <i data-feather="mic-off" class="me-1"></i>녹음 중지 (자동 변환)
+                                        </button>
+                                        <button type="button" id="summarizeVoice" class="btn btn-outline-success" disabled>
+                                            <i data-feather="zap" class="me-1"></i>AI 요약 생성
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- 녹음 상태 표시 -->
+                                    <div id="recordingStatus" class="alert alert-info d-none" role="alert">
+                                        <i data-feather="mic" class="me-2"></i>
+                                        <span id="recordingTime">00:00</span> - 음성을 녹음중입니다...
+                                    </div>
+                                    
+                                    <!-- 변환된 텍스트 미리보기 -->
+                                    <div id="transcriptionPreview" class="alert alert-light d-none">
+                                        <h6><i data-feather="headphones" class="me-2"></i>변환된 텍스트:</h6>
+                                        <div id="transcriptionText"></div>
+                                        <div class="mt-2">
+                                            <button type="button" id="addToContent" class="btn btn-sm btn-primary">
+                                                <i data-feather="plus" class="me-1"></i>상담 내용에 추가
+                                            </button>
+                                            <button type="button" id="clearTranscription" class="btn btn-sm btn-outline-secondary">
+                                                <i data-feather="x" class="me-1"></i>삭제
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- AI 요약 결과 -->
+                                    <div id="aiSummaryResult" class="alert alert-success d-none">
+                                        <h6><i data-feather="zap" class="me-2"></i>AI 상담 요약:</h6>
+                                        <div id="summaryContent"></div>
+                                        <div class="mt-2">
+                                            <button type="button" id="applySummary" class="btn btn-sm btn-success">
+                                                <i data-feather="check" class="me-1"></i>요약 적용
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {{ form.counseling_content(class="form-control", rows="8", placeholder="상담 진행 내용을 자세히 기록해주세요. 음성 녹음 기능을 활용하실 수 있습니다.") }}
+                                <div class="form-text">학습자의 현재 상황, 어려움, 목표 등을 포함해주세요</div>
+                                {% if form.counseling_content.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.counseling_content.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.recommendations.label(class="form-label") }}
+                                {{ form.recommendations(class="form-control", rows="4", placeholder="학습자에게 필요한 추천사항이나 학습 방향을 적어주세요") }}
+                                {% if form.recommendations.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.recommendations.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                {{ form.notes.label(class="form-label") }}
+                                {{ form.notes(class="form-control", rows="3", placeholder="기타 특이사항이나 주의할 점이 있다면 적어주세요") }}
+                                {% if form.notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.notes.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                {% if is_additional %}
+                                    <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                        <i data-feather="arrow-left" class="me-2"></i>취소
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i data-feather="save" class="me-2"></i>상담 기록 저장
+                                    </button>
+                                {% else %}
+                                    <a href="{{ url_for('level_test') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                        <i data-feather="arrow-left" class="me-2"></i>이전 단계
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i data-feather="arrow-right" class="me-2"></i>상담 완료 및 반 배정
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(textarea => {
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+});
+
+// 기본 페이지 스크립트 - 음성 녹음은 별도 파일에서 처리
+        startBtn.addEventListener('click', async function() {
+            console.log('Start recording clicked');
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = function(event) {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = function() {
+            stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start();
+        recordingStartTime = Date.now();
+        
+        // UI 업데이트
+        document.getElementById('startRecording').disabled = true;
+        document.getElementById('stopRecording').disabled = false;
+        document.getElementById('recordingStatus').classList.remove('d-none');
+        
+            // 타이머 시작
+            recordingTimer = setInterval(updateRecordingTime, 1000);
+            
+        } catch (error) {
+            alert('마이크 접근 권한이 필요합니다.');
+            console.error('Error accessing microphone:', error);
+        }
+        });
+    } else {
+        console.error('startRecording button not found');
+    }
+
+    // 음성 녹음 중지 및 자동 텍스트 변환
+    const stopBtn = document.getElementById('stopRecording');
+    if (!stopBtn) {
+        console.error('stopRecording button not found');
+        return;
+    }
+    
+    stopBtn.addEventListener('click', async function() {
+        console.log('Stop recording clicked');
+        
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        console.log('Stopping recording...');
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        
+        // UI 업데이트
+        document.getElementById('startRecording').disabled = false;
+        document.getElementById('stopRecording').disabled = true;
+        document.getElementById('recordingStatus').classList.add('d-none');
+        
+        // 타이머 중지
+        clearInterval(recordingTimer);
+        
+        // 자동으로 텍스트 변환 시작
+        await transcribeAudio();
+    } else {
+        console.log('MediaRecorder not active');
+    }
+    });
+
+    // AI 요약 생성
+    const summarizeBtn = document.getElementById('summarizeVoice');
+    if (summarizeBtn) {
+        summarizeBtn.addEventListener('click', async function() {
+    const transcriptionText = document.getElementById('transcriptionText').textContent;
+    
+    if (!transcriptionText.trim()) {
+        alert('먼저 음성을 녹음하고 변환해주세요.');
+        return;
+    }
+    
+    const button = this;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i data-feather="loader" class="me-1"></i>AI 분석중...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/summarize-counseling', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: transcriptionText,
+                learner_id: {{ learner.id }}
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displaySummary(result.summary);
+        } else {
+            alert('AI 요약에 실패했습니다: ' + result.error);
+        }
+        
+    } catch (error) {
+        alert('AI 요약 중 오류가 발생했습니다.');
+        console.error('Summary error:', error);
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        feather.replace();
+    }
+});
+
+// 변환된 텍스트를 상담 내용에 추가
+document.getElementById('addToContent').addEventListener('click', function() {
+    const transcriptionText = document.getElementById('transcriptionText').textContent;
+    const counselingContent = document.getElementById('counseling_content');
+    
+    const currentContent = counselingContent.value;
+    const newContent = currentContent + (currentContent ? '\n\n' : '') + 
+                      '[음성 녹음 내용]\n' + transcriptionText;
+    
+    counselingContent.value = newContent;
+    
+    // 텍스트 영역 자동 크기 조정
+    counselingContent.style.height = 'auto';
+    counselingContent.style.height = counselingContent.scrollHeight + 'px';
+    
+    // 변환 결과 숨기기
+    document.getElementById('transcriptionPreview').classList.add('d-none');
+});
+
+// 변환 결과 삭제
+document.getElementById('clearTranscription').addEventListener('click', function() {
+    document.getElementById('transcriptionPreview').classList.add('d-none');
+    document.getElementById('transcriptionText').textContent = '';
+    audioChunks = [];
+    document.getElementById('summarizeVoice').disabled = true;
+});
+
+// AI 요약 적용
+document.getElementById('applySummary').addEventListener('click', function() {
+    const summaryContent = document.getElementById('summaryContent').textContent;
+    const recommendationsField = document.getElementById('recommendations');
+    
+    // 추천사항 필드에 AI 요약의 권장사항 추가
+    const currentRecommendations = recommendationsField.value;
+    const newRecommendations = currentRecommendations + (currentRecommendations ? '\n\n' : '') +
+                              '[AI 분석 결과]\n' + summaryContent;
+    
+    recommendationsField.value = newRecommendations;
+    
+    // 텍스트 영역 자동 크기 조정
+    recommendationsField.style.height = 'auto';
+    recommendationsField.style.height = recommendationsField.scrollHeight + 'px';
+    
+    // 요약 결과 숨기기
+    document.getElementById('aiSummaryResult').classList.add('d-none');
+});
+
+// 음성을 텍스트로 변환하는 함수
+async function transcribeAudio() {
+    if (audioChunks.length === 0) {
+        return;
+    }
+    
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'alert alert-info mt-2';
+    statusDiv.innerHTML = '<i data-feather="loader" class="me-2"></i>음성을 텍스트로 변환중...';
+    document.querySelector('.voice-recording-controls').appendChild(statusDiv);
+    
+    try {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'recording.wav');
+        
+        const response = await fetch('/transcribe-audio', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('transcriptionText').textContent = result.text;
+            document.getElementById('transcriptionPreview').classList.remove('d-none');
+            document.getElementById('summarizeVoice').disabled = false;
+        } else {
+            alert('음성 변환에 실패했습니다: ' + result.error);
+        }
+        
+    } catch (error) {
+        alert('음성 변환 중 오류가 발생했습니다.');
+        console.error('Transcription error:', error);
+    } finally {
+        statusDiv.remove();
+        feather.replace();
+    }
+}
+
+// 녹음 시간 업데이트
+function updateRecordingTime() {
+    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('recordingTime').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// AI 요약 생성
+document.getElementById('summarizeVoice').addEventListener('click', async function() {
+    const transcriptionText = document.getElementById('transcriptionText').textContent;
+    
+    if (!transcriptionText.trim()) {
+        alert('먼저 음성을 녹음하고 변환해주세요.');
+        return;
+    }
+    
+    const button = this;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i data-feather="loader" class="me-1"></i>AI 분석중...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch('/summarize-counseling', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: transcriptionText,
+                learner_id: {{ learner.id }}
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displaySummary(result.summary);
+        } else {
+            alert('AI 요약에 실패했습니다: ' + result.error);
+        }
+        
+    } catch (error) {
+        alert('AI 요약 중 오류가 발생했습니다.');
+        console.error('Summary error:', error);
+    } finally {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        feather.replace();
+    }
+});
+
+// 변환된 텍스트를 상담 내용에 추가
+document.getElementById('addToContent').addEventListener('click', function() {
+    const transcriptionText = document.getElementById('transcriptionText').textContent;
+    const counselingContent = document.getElementById('counseling_content');
+    
+    const currentContent = counselingContent.value;
+    const newContent = currentContent + (currentContent ? '\n\n' : '') + 
+                      '[음성 녹음 내용]\n' + transcriptionText;
+    
+    counselingContent.value = newContent;
+    
+    // 텍스트 영역 자동 크기 조정
+    counselingContent.style.height = 'auto';
+    counselingContent.style.height = counselingContent.scrollHeight + 'px';
+    
+    // 변환 결과 숨기기
+    document.getElementById('transcriptionPreview').classList.add('d-none');
+});
+
+// 변환 결과 삭제
+document.getElementById('clearTranscription').addEventListener('click', function() {
+    document.getElementById('transcriptionPreview').classList.add('d-none');
+    document.getElementById('transcriptionText').textContent = '';
+    audioChunks = [];
+    document.getElementById('summarizeVoice').disabled = true;
+});
+
+
+
+// AI 요약 결과 표시
+function displaySummary(summary) {
+    const summaryHtml = `
+        <div class="mb-2">
+            <strong>📝 주요 내용:</strong><br>
+            ${summary.summary || '요약 없음'}
+        </div>
+        <div class="mb-2">
+            <strong>😊 감정 상태:</strong><br>
+            ${summary.emotional_state || '분석 불가'}
+        </div>
+        <div class="mb-2">
+            <strong>📚 교육적 필요사항:</strong><br>
+            ${summary.educational_needs || '특이사항 없음'}
+        </div>
+        <div class="mb-2">
+            <strong>💡 권장사항:</strong><br>
+            ${summary.recommendations || '추가 권장사항 없음'}
+        </div>
+        <div class="mb-2">
+            <strong>⚠️ 주의점:</strong><br>
+            ${summary.attention_points || '특별한 주의사항 없음'}
+        </div>
+    `;
+    
+    document.getElementById('summaryContent').innerHTML = summaryHtml;
+    document.getElementById('aiSummaryResult').classList.remove('d-none');
+}
+
+// AI 요약 적용
+document.getElementById('applySummary').addEventListener('click', function() {
+    const summaryContent = document.getElementById('summaryContent').textContent;
+    const recommendationsField = document.getElementById('recommendations');
+    
+    // 추천사항 필드에 AI 요약의 권장사항 추가
+    const currentRecommendations = recommendationsField.value;
+    const newRecommendations = currentRecommendations + (currentRecommendations ? '\n\n' : '') +
+                              '[AI 분석 결과]\n' + summaryContent;
+    
+    recommendationsField.value = newRecommendations;
+    
+    // 텍스트 영역 자동 크기 조정
+    recommendationsField.style.height = 'auto';
+    recommendationsField.style.height = recommendationsField.scrollHeight + 'px';
+    
+    // 요약 결과 숨기기
+    document.getElementById('aiSummaryResult').classList.add('d-none');
+});
+
+// learner ID를 JavaScript에서 사용할 수 있도록 설정
+window.learnerId = {{ learner.id }};
+
+// Feather icons
+feather.replace();
+</script>
+
+<!-- 별도 JavaScript 파일로 음성 녹음 기능 로드 -->
+<script src="/static/js/voice-recording.js"></script>
+{% endblock %}

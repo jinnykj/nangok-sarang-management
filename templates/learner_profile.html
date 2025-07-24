@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+
+{% block title %}{{ learner.name }} - 학습자 프로필{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column - Basic Info -->
+    <div class="col-lg-4 mb-4">
+        <!-- Learner Info Card -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="user" class="me-2"></i>학습자 정보
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-lg bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <span class="fs-1 fw-bold">{{ learner.name[0] }}</span>
+                    </div>
+                    <h4 class="text-primary">{{ learner.name }}</h4>
+                    <p class="text-muted">
+                        {% if learner.assigned_class %}
+                            {% if learner.assigned_class == '예비 중등반' %}
+                                <span class="badge bg-success fs-6">{{ learner.assigned_class }}</span>
+                            {% elif learner.assigned_class == '초등 고급반' %}
+                                <span class="badge bg-info fs-6">{{ learner.assigned_class }}</span>
+                            {% elif learner.assigned_class == '초등 중급반' %}
+                                <span class="badge bg-warning fs-6">{{ learner.assigned_class }}</span>
+                            {% else %}
+                                <span class="badge bg-primary fs-6">{{ learner.assigned_class }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">미배정</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="learner-details">
+                    <div class="detail-item">
+                        <i data-feather="calendar" class="icon-sm me-2 text-muted"></i>
+                        <strong>생년월일:</strong> {{ learner.birth_date.strftime('%Y년 %m월 %d일') }}
+                    </div>
+                    <div class="detail-item">
+                        <i data-feather="phone" class="icon-sm me-2 text-muted"></i>
+                        <strong>연락처:</strong> 
+                        <a href="tel:{{ learner.phone }}" class="text-decoration-none">{{ learner.phone }}</a>
+                    </div>
+                    {% if learner.email %}
+                    <div class="detail-item">
+                        <i data-feather="mail" class="icon-sm me-2 text-muted"></i>
+                        <strong>이메일:</strong> 
+                        <a href="mailto:{{ learner.email }}" class="text-decoration-none">{{ learner.email }}</a>
+                    </div>
+                    {% endif %}
+                    {% if learner.address %}
+                    <div class="detail-item">
+                        <i data-feather="map-pin" class="icon-sm me-2 text-muted"></i>
+                        <strong>주소:</strong> {{ learner.address }}
+                    </div>
+                    {% endif %}
+
+                    <div class="detail-item">
+                        <i data-feather="clock" class="icon-sm me-2 text-muted"></i>
+                        <strong>등록일:</strong> {{ learner.created_at.strftime('%Y년 %m월 %d일') }}
+                    </div>
+                    <div class="detail-item">
+                        <i data-feather="activity" class="icon-sm me-2 text-muted"></i>
+                        <strong>진행상태:</strong> 
+                        {% if learner.status == '반 배정 완료' %}
+                            <span class="badge bg-success">{{ learner.status }}</span>
+                        {% elif learner.status == '레벨 테스트' %}
+                            <span class="badge bg-info">{{ learner.status }}</span>
+                        {% elif learner.status == '상담' %}
+                            <span class="badge bg-warning">{{ learner.status }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ learner.status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="detail-item">
+                        <i data-feather="user-check" class="icon-sm me-2 text-muted"></i>
+                        <strong>학적상태:</strong>
+                        {% set academic_status = learner.academic_status or '재학' %}
+                        {% if academic_status == '재학' %}
+                            <span class="badge bg-primary">{{ academic_status }}</span>
+                        {% elif academic_status == '휴학' %}
+                            <span class="badge bg-warning">{{ academic_status }}</span>
+                        {% elif academic_status == '중퇴' %}
+                            <span class="badge bg-danger">{{ academic_status }}</span>
+                        {% elif academic_status == '졸업' %}
+                            <span class="badge bg-success">{{ academic_status }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ academic_status }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="detail-item">
+                        <i data-feather="users" class="icon-sm me-2 text-muted"></i>
+                        <strong>배정반:</strong>
+                        {% if learner.class_name %}
+                            {% if learner.class_name == '기쁨반' %}
+                                <span class="badge bg-primary">{{ learner.class_name }}</span>
+                            {% elif learner.class_name == '은혜반' %}
+                                <span class="badge bg-success">{{ learner.class_name }}</span>
+                            {% elif learner.class_name == '지혜반' %}
+                                <span class="badge bg-info">{{ learner.class_name }}</span>
+                            {% elif learner.class_name == '바다반' %}
+                                <span class="badge bg-warning">{{ learner.class_name }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ learner.class_name }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">미배정</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if learner.motivation %}
+                <hr>
+                <div class="motivation-section">
+                    <h6 class="text-primary">
+                        <i data-feather="heart" class="icon-sm me-2"></i>학습 동기
+                    </h6>
+                    <p class="text-muted">{{ learner.motivation }}</p>
+                </div>
+                {% endif %}
+
+                {% if learner.other_info %}
+                <div class="other-info-section">
+                    <h6 class="text-primary">
+                        <i data-feather="info" class="icon-sm me-2"></i>기타 정보
+                    </h6>
+                    <p class="text-muted">{{ learner.other_info }}</p>
+                </div>
+                {% endif %}
+
+                <!-- 관리자 메모 섹션 -->
+                <hr>
+                <div class="memo-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-primary mb-0">
+                            <i data-feather="edit-3" class="icon-sm me-2"></i>관리자 메모
+                        </h6>
+                        <a href="{{ url_for('edit_memo', learner_id=learner.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i data-feather="edit" class="me-1"></i>수정
+                        </a>
+                    </div>
+                    {% if learner.memo %}
+                        <div class="memo-content p-3 bg-light rounded">
+                            {{ learner.memo|replace('\n', '<br>')|safe }}
+                        </div>
+                    {% else %}
+                        <div class="memo-placeholder text-muted text-center p-3 border rounded" style="border-style: dashed !important;">
+                            <i data-feather="plus-circle" class="me-2"></i>
+                            메모를 추가하려면 수정 버튼을 클릭하세요
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- AI 분석 섹션 -->
+                {% if learner.ai_analysis %}
+                <hr>
+                <div class="ai-analysis-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-primary mb-0">
+                            <i data-feather="cpu" class="icon-sm me-2"></i>AI 학습자 분석
+                        </h6>
+                        <div>
+                            <span class="badge bg-info me-2">자동 생성됨</span>
+                            <a href="{{ url_for('regenerate_ai_analysis', learner_id=learner.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i data-feather="refresh-cw" class="me-1"></i>재분석
+                            </a>
+                        </div>
+                    </div>
+                    <div class="ai-analysis-content p-3 bg-light rounded border-start border-primary border-4">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ learner.ai_analysis }}</pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i data-feather="zap" class="me-2"></i>빠른 작업
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <!-- 레벨 테스트가 없으면 레벨 테스트 응시 버튼을 먼저 표시 -->
+                    {% if not level_tests %}
+                    <a href="{{ url_for('level_test') }}?learner_id={{ learner.id }}" class="btn btn-primary">
+                        <i data-feather="edit-3" class="me-2"></i>레벨 테스트 응시
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('level_test') }}?learner_id={{ learner.id }}" class="btn btn-outline-info">
+                        <i data-feather="repeat" class="me-2"></i>레벨 테스트 재응시
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('add_counseling', learner_id=learner.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="message-circle" class="me-2"></i>상담 기록 추가
+                    </a>
+                    <a href="{{ url_for('add_exam', learner_id=learner.id) }}" class="btn btn-outline-success">
+                        <i data-feather="file-plus" class="me-2"></i>시험 기록 추가
+                    </a>
+                    <a href="{{ url_for('edit_memo', learner_id=learner.id) }}" class="btn btn-outline-warning">
+                        <i data-feather="edit-3" class="me-2"></i>메모 수정
+                    </a>
+                    <a href="{{ url_for('edit_academic_status', learner_id=learner.id) }}" class="btn btn-outline-info">
+                        <i data-feather="user-check" class="me-2"></i>학적상태 변경
+                    </a>
+                    <a href="{{ url_for('edit_class_assignment', learner_id=learner.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="users" class="me-2"></i>반 배정 변경
+                    </a>
+                    <a href="{{ url_for('add_learner_history', learner_id=learner.id) }}" class="btn btn-outline-success">
+                        <i data-feather="plus-circle" class="me-2"></i>이력 추가
+                    </a>
+                    <a href="{{ url_for('learner_list') }}" class="btn btn-outline-secondary">
+                        <i data-feather="arrow-left" class="me-2"></i>목록으로 돌아가기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Details -->
+    <div class="col-lg-8">
+        <!-- Level Test Results -->
+        {% if level_tests %}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="bar-chart" class="me-2"></i>레벨 테스트 결과
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for test in level_tests %}
+                <div class="test-result-card">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="score-summary">
+                                <div class="text-center mb-3">
+                                    <div class="score-circle-large bg-primary text-white d-inline-flex align-items-center justify-content-center">
+                                        <span class="fs-2 fw-bold">{{ test.total_score }}</span>
+                                    </div>
+                                    <p class="text-muted mt-2">총점</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="score-breakdown">
+                                <div class="score-item-row">
+                                    <span class="score-label">어휘:</span>
+                                    <div class="score-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary" style="width: {{ (test.vocabulary_score / 100 * 100) }}%"></div>
+                                        </div>
+                                        <span class="score-value">{{ test.vocabulary_score }}점</span>
+                                    </div>
+                                </div>
+                                <div class="score-item-row">
+                                    <span class="score-label">문법:</span>
+                                    <div class="score-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" style="width: {{ (test.grammar_score / 100 * 100) }}%"></div>
+                                        </div>
+                                        <span class="score-value">{{ test.grammar_score }}점</span>
+                                    </div>
+                                </div>
+                                <div class="score-item-row">
+                                    <span class="score-label">독해:</span>
+                                    <div class="score-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar bg-info" style="width: {{ (test.reading_score / 100 * 100) }}%"></div>
+                                        </div>
+                                        <span class="score-value">{{ test.reading_score }}점</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="test-meta mt-3">
+                        <small class="text-muted">
+                            <i data-feather="calendar" class="icon-sm me-1"></i>
+                            테스트 완료일: {{ test.completed_at.strftime('%Y년 %m월 %d일 %H:%M') }}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Counseling History -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i data-feather="message-circle" class="me-2"></i>상담 기록 ({{ counselings|length }}건)
+                </h5>
+                <a href="{{ url_for('add_counseling', learner_id=learner.id) }}" class="btn btn-sm btn-outline-dark">
+                    <i data-feather="plus" class="me-1"></i>상담 추가
+                </a>
+            </div>
+            <div class="card-body">
+                {% if counselings %}
+                    {% for counseling in counselings %}
+                    <div class="counseling-record">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="counseling-header">
+                                <h6 class="text-primary mb-1">{{ counseling.counselor_name }}</h6>
+                                <small class="text-muted">
+                                    <i data-feather="calendar" class="icon-sm me-1"></i>
+                                    {{ counseling.created_at.strftime('%Y년 %m월 %d일 %H:%M') }}
+                                    {% if counseling.updated_at != counseling.created_at %}
+                                        (수정: {{ counseling.updated_at.strftime('%m월 %d일 %H:%M') }})
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="counseling-content">
+                            <div class="content-section mb-3">
+                                <h6 class="section-title">상담 내용</h6>
+                                <p class="text-muted">{{ counseling.counseling_content }}</p>
+                            </div>
+                            
+                            {% if counseling.recommendations %}
+                            <div class="content-section mb-3">
+                                <h6 class="section-title text-success">추천 사항</h6>
+                                <p class="text-muted">{{ counseling.recommendations }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if counseling.notes %}
+                            <div class="content-section">
+                                <h6 class="section-title text-info">비고</h6>
+                                <p class="text-muted">{{ counseling.notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if not loop.last %}
+                        <hr class="my-4">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="message-circle" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">상담 기록이 없습니다</h6>
+                        <p class="text-muted">첫 상담을 추가해보세요.</p>
+                        <a href="{{ url_for('add_counseling', learner_id=learner.id) }}" class="btn btn-warning">
+                            <i data-feather="plus" class="me-2"></i>첫 상담 기록 추가
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Learner History Timeline -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>학습자 이력 연표 ({{ learner.history_records.count() }}건)
+                </h5>
+                <a href="{{ url_for('add_learner_history', learner_id=learner.id) }}" class="btn btn-sm btn-outline-light">
+                    <i data-feather="plus" class="me-1"></i>이력 추가
+                </a>
+            </div>
+            <div class="card-body">
+                {% if learner.history_records.count() > 0 %}
+                    <div class="timeline">
+                        {% for history in learner.history_records %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker 
+                                {% if history.event_type == 'enrollment' %}bg-success
+                                {% elif history.event_type == 'graduation_certification' %}bg-warning
+                                {% elif history.event_type == 'class_assignment' %}bg-primary
+                                {% elif history.event_type == 'level_test' %}bg-info
+                                {% elif history.event_type == 'counseling' %}bg-secondary
+                                {% elif history.event_type == 'academic_status' %}bg-danger
+                                {% elif history.event_type == 'achievement' %}bg-success
+                                {% else %}bg-light{% endif %}">
+                                <i data-feather="
+                                    {% if history.event_type == 'enrollment' %}user-plus
+                                    {% elif history.event_type == 'graduation_certification' %}award
+                                    {% elif history.event_type == 'class_assignment' %}users
+                                    {% elif history.event_type == 'level_test' %}edit-3
+                                    {% elif history.event_type == 'counseling' %}message-circle
+                                    {% elif history.event_type == 'academic_status' %}user-check
+                                    {% elif history.event_type == 'achievement' %}star
+                                    {% else %}circle{% endif %}" class="timeline-icon"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <h6 class="timeline-title">{{ history.event_title }}</h6>
+                                    <small class="timeline-date text-muted">{{ history.event_date.strftime('%Y년 %m월 %d일') }}</small>
+                                </div>
+                                {% if history.event_description %}
+                                <p class="timeline-description text-muted mb-2">{{ history.event_description }}</p>
+                                {% endif %}
+                                
+                                {% if history.previous_value or history.new_value %}
+                                <div class="timeline-changes">
+                                    {% if history.previous_value %}
+                                        <span class="badge bg-light text-dark me-2">이전: {{ history.previous_value }}</span>
+                                    {% endif %}
+                                    {% if history.new_value %}
+                                        <span class="badge bg-primary">변경: {{ history.new_value }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="timeline-meta mt-2">
+                                    {% if history.created_by %}
+                                        <small class="text-muted">기록자: {{ history.created_by }}</small>
+                                    {% endif %}
+                                    <div class="timeline-actions">
+                                        <a href="{{ url_for('delete_learner_history', history_id=history.id) }}" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('이 이력을 삭제하시겠습니까?')">
+                                            <i data-feather="trash-2" class="me-1"></i>삭제
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="clock" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">이력 기록이 없습니다</h6>
+                        <p class="text-muted">학습자의 중요한 이력을 기록해보세요.</p>
+                        <a href="{{ url_for('add_learner_history', learner_id=learner.id) }}" class="btn btn-secondary">
+                            <i data-feather="plus" class="me-2"></i>첫 이력 기록 추가
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Exam History -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i data-feather="file-text" class="me-2"></i>시험 기록 ({{ exams|length }}건)
+                </h5>
+                <a href="{{ url_for('add_exam', learner_id=learner.id) }}" class="btn btn-sm btn-outline-light">
+                    <i data-feather="plus" class="me-1"></i>시험 추가
+                </a>
+            </div>
+            <div class="card-body">
+                {% if exams %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>시험명</th>
+                                    <th>시험일</th>
+                                    <th>점수</th>
+                                    <th>비율</th>
+                                    <th>비고</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exam in exams %}
+                                <tr>
+                                    <td>
+                                        <h6 class="mb-0">{{ exam.exam_name }}</h6>
+                                    </td>
+                                    <td>{{ exam.exam_date.strftime('%Y년 %m월 %d일') }}</td>
+                                    <td>
+                                        <span class="fs-6 fw-bold">{{ exam.score }}</span> / {{ exam.max_score }}
+                                    </td>
+                                    <td>
+                                        {% set percentage = (exam.score / exam.max_score * 100) | round(1) %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                <div class="progress-bar 
+                                                    {% if percentage >= 80 %}bg-success
+                                                    {% elif percentage >= 60 %}bg-info
+                                                    {% elif percentage >= 40 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}" 
+                                                    style="width: {{ percentage }}%"></div>
+                                            </div>
+                                            <small class="text-muted">{{ percentage }}%</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if exam.notes %}
+                                            <small class="text-muted">{{ exam.notes[:50] }}{% if exam.notes|length > 50 %}...{% endif %}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="file-text" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">시험 기록이 없습니다</h6>
+                        <p class="text-muted">레벨 테스트를 먼저 응시해주세요.</p>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ url_for('level_test') }}?learner_id={{ learner.id }}" class="btn btn-primary">
+                                <i data-feather="edit-3" class="me-2"></i>레벨 테스트 응시
+                            </a>
+                            <a href="{{ url_for('add_exam', learner_id=learner.id) }}" class="btn btn-outline-success">
+                                <i data-feather="plus" class="me-2"></i>기타 시험 추가
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Privacy Consent Section -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i data-feather="shield" class="me-2"></i>개인정보 동의서
+                </h5>
+                {% if learner.privacy_consent %}
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('privacy_consent_pdf', learner_id=learner.id) }}" class="btn btn-sm btn-outline-dark">
+                            <i data-feather="download" class="me-1"></i>PDF 다운로드
+                        </a>
+                        <a href="{{ url_for('privacy_consent', learner_id=learner.id) }}" class="btn btn-sm btn-outline-dark">
+                            <i data-feather="edit-3" class="me-1"></i>수정
+                        </a>
+                    </div>
+                {% else %}
+                    <a href="{{ url_for('privacy_consent', learner_id=learner.id) }}" class="btn btn-sm btn-outline-dark">
+                        <i data-feather="plus" class="me-1"></i>동의서 작성
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if learner.privacy_consent %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i data-feather="check" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-success">개인정보 수집 및 이용 동의 완료</h6>
+                            <div class="text-muted">
+                                <small>동의일: {{ learner.privacy_consent.consent_date.strftime('%Y년 %m월 %d일') }}</small><br>
+                                <small>동의자: {{ learner.privacy_consent.consent_name }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>작성일:</strong>
+                                <span class="ms-2">{{ learner.privacy_consent.created_at.strftime('%Y년 %m월 %d일 %H:%M') }}</span>
+                            </div>
+                        </div>
+                        {% if learner.privacy_consent.updated_at != learner.privacy_consent.created_at %}
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <strong>수정일:</strong>
+                                <span class="ms-2">{{ learner.privacy_consent.updated_at.strftime('%Y년 %m월 %d일 %H:%M') }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="shield" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h6 class="text-muted">개인정보 동의서가 없습니다</h6>
+                        <p class="text-muted">개인정보 수집 및 이용에 대한 동의서를 작성해주세요.</p>
+                        <a href="{{ url_for('privacy_consent', learner_id=learner.id) }}" class="btn btn-warning">
+                            <i data-feather="shield" class="me-2"></i>개인정보 동의서 작성
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Feather icons
+feather.replace();
+
+// Print profile
+function printProfile() {
+    window.print();
+}
+
+// Back to top
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Show/hide sections based on screen size
+function adjustLayout() {
+    if (window.innerWidth < 992) {
+        document.querySelectorAll('.detail-item').forEach(item => {
+            item.classList.add('mb-2');
+        });
+    }
+}
+
+window.addEventListener('resize', adjustLayout);
+window.addEventListener('load', adjustLayout);
+</script>
+{% endblock %}

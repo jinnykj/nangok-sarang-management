@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}메모 수정 - {{ learner.name }} - 성인 문해교육 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow">
+            <div class="card-header bg-sky text-white">
+                <h4 class="card-title mb-2">
+                    <i data-feather="edit-3" class="me-2"></i>
+                    메모 수정
+                </h4>
+                <p class="card-subtitle mb-0 opacity-75">{{ learner.name }}님에 대한 관리자 메모를 작성/수정합니다.</p>
+            </div>
+            <div class="card-body p-4">
+                <!-- 학습자 기본 정보 -->
+                <div class="alert alert-light mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle bg-sky">
+                                {{ learner.name[0] }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">{{ learner.name }}</h6>
+                            <p class="text-muted mb-0">
+                                <i data-feather="phone" class="icon-xs me-1"></i>{{ learner.phone }}
+                                {% if learner.assigned_class %}
+                                    <span class="badge bg-sky-light text-sky ms-2">{{ learner.assigned_class }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 메모 폼 -->
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        {{ form.memo.label(class="form-label") }}
+                        {{ form.memo(class="form-control form-control-lg", placeholder="학습자에 대한 메모를 입력하세요...") }}
+                        <div class="form-text">
+                            학습 진도, 특별 사항, 상담 내용 등을 자유롭게 기록하세요.
+                        </div>
+                        {% if form.memo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.memo.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 기존 메모 표시 (있는 경우) -->
+                    {% if learner.memo %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">현재 메모</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ learner.memo|replace('\n', '<br>')|safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- 버튼 -->
+                    <div class="d-flex justify-content-between pt-3">
+                        <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary btn-lg">
+                            <i data-feather="arrow-left" class="me-2"></i>프로필로 돌아가기
+                        </a>
+                        <button type="submit" class="btn btn-sky btn-lg">
+                            <i data-feather="save" class="me-2"></i>메모 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    
+    var forms = document.querySelectorAll('.needs-validation');
+    
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Auto-resize textarea
+    const textarea = document.querySelector('textarea');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Initial resize
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    }
+})();
+</script>
+{% endblock %}

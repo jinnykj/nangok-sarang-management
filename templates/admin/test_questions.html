@@ -1,0 +1,126 @@
+{% extends "admin/base.html" %}
+
+{% block title %}테스트 문제 관리 - 관리자 모드{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">테스트 문제 관리</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('admin_add_question', level=current_level) }}" class="btn btn-sm btn-primary">
+                <i data-feather="plus" class="me-1"></i>문제 추가
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 레벨 탭 -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if current_level == 'basic' else '' }}" 
+           href="{{ url_for('admin_test_questions', level='basic') }}">
+            기초 레벨
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if current_level == 'intermediate' else '' }}" 
+           href="{{ url_for('admin_test_questions', level='intermediate') }}">
+            중급 레벨
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ 'active' if current_level == 'advanced' else '' }}" 
+           href="{{ url_for('admin_test_questions', level='advanced') }}">
+            고급 레벨
+        </a>
+    </li>
+</ul>
+
+<!-- 문제 목록 -->
+<div class="card admin-card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i data-feather="list" class="me-2"></i>
+            {{ current_level|title }} 레벨 문제 목록 ({{ questions|length }}개)
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if questions %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>문제 유형</th>
+                            <th>문제</th>
+                            <th>카테고리</th>
+                            <th>배점</th>
+                            <th>수정일</th>
+                            <th>액션</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions %}
+                        <tr>
+                            <td>{{ question.order_index }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'primary' if question.question_type == 'multiple_choice' else 'success' if question.question_type == 'drawing' else 'info' }}">
+                                    {{ '객관식' if question.question_type == 'multiple_choice' else '그리기' if question.question_type == 'drawing' else '읽기' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="question-text">
+                                    {{ question.question_text[:60] }}
+                                    {% if question.question_text|length > 60 %}...{% endif %}
+                                </div>
+                                {% if question.options and question.question_type == 'multiple_choice' %}
+                                    <small class="text-muted">
+                                        선택지: {{ question.options|join(', ') }}
+                                    </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ {'vocabulary': '어휘', 'grammar': '문법', 'reading': '독해'}[question.category] }}
+                                </span>
+                            </td>
+                            <td>{{ question.points }}점</td>
+                            <td>{{ question.updated_at.strftime('%m-%d %H:%M') if question.updated_at else '—' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin_edit_question', question_id=question.id) }}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin_delete_question', question_id=question.id) }}" 
+                                       class="btn btn-outline-danger btn-sm"
+                                       onclick="return confirm('이 문제를 삭제하시겠습니까?')">
+                                        <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i data-feather="inbox" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                <h5 class="text-muted">문제가 없습니다</h5>
+                <p class="text-muted">새 문제를 추가하여 시작하세요.</p>
+                <a href="{{ url_for('admin_add_question', level=current_level) }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-2"></i>첫 번째 문제 추가
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.question-text {
+    font-weight: 500;
+    line-height: 1.4;
+}
+</style>
+{% endblock %}

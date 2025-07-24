@@ -1,0 +1,126 @@
+{% extends "admin/base.html" %}
+
+{% block title %}시스템 로그 - 관리자 모드{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">시스템 로그</h1>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card admin-card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        {{ form.log_type.label(class="form-label") }}
+                        {{ form.log_type(class="form-select", value=current_log_type) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.date_range.label(class="form-label") }}
+                        {{ form.date_range(class="form-select", value=current_date_range) }}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        {{ form.search_logs(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card admin-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="activity" class="me-2"></i>
+                    로그 목록 ({{ logs|length }}건)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>시간</th>
+                                    <th>유형</th>
+                                    <th>사용자</th>
+                                    <th>액션</th>
+                                    <th>IP</th>
+                                    <th>상세</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td>{{ log.created_at.strftime('%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if log.log_type == 'login' else 'success' if log.log_type == 'data_change' else 'danger' if log.log_type == 'system_error' else 'info' }}">
+                                            {{ {'login': '로그인', 'data_change': '데이터변경', 'system_error': '시스템오류', 'export': '내보내기'}.get(log.log_type, log.log_type) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ log.username or 'System' }}</td>
+                                    <td>{{ log.action }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ log.ip_address or '—' }}</small>
+                                    </td>
+                                    <td>
+                                        {% if log.details %}
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#logModal{{ log.id }}">
+                                                상세
+                                            </button>
+                                            
+                                            <!-- 모달 -->
+                                            <div class="modal fade" id="logModal{{ log.id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">로그 상세 정보</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <dl class="row">
+                                                                <dt class="col-sm-3">시간:</dt>
+                                                                <dd class="col-sm-9">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                                                
+                                                                <dt class="col-sm-3">사용자:</dt>
+                                                                <dd class="col-sm-9">{{ log.username or 'System' }}</dd>
+                                                                
+                                                                <dt class="col-sm-3">액션:</dt>
+                                                                <dd class="col-sm-9">{{ log.action }}</dd>
+                                                                
+                                                                <dt class="col-sm-3">상세:</dt>
+                                                                <dd class="col-sm-9"><pre class="small">{{ log.details }}</pre></dd>
+                                                                
+                                                                <dt class="col-sm-3">User Agent:</dt>
+                                                                <dd class="col-sm-9"><small class="text-muted">{{ log.user_agent or '—' }}</small></dd>
+                                                            </dl>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="inbox" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="text-muted">로그가 없습니다</h5>
+                        <p class="text-muted">선택한 조건에 해당하는 로그가 없습니다.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

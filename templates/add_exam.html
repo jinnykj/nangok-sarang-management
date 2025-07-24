@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}시험 기록 추가 - {{ learner.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                        {{ learner.name[0] }}
+                    </div>
+                    <div>
+                        <h4 class="text-primary mb-1">{{ learner.name }}님 시험 기록 추가</h4>
+                        <p class="text-muted mb-0">
+                            {% if learner.assigned_class %}
+                                {{ learner.assigned_class }} 소속
+                            {% else %}
+                                미배정 상태
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exam Form -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="file-plus" class="me-2"></i>새 시험 기록
+                </h5>
+                <p class="card-subtitle mb-0 opacity-75">학습자의 시험 결과를 기록합니다</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <!-- Exam Basic Info -->
+                    <div class="section-header">
+                        <h6 class="text-primary">
+                            <i data-feather="info" class="me-2"></i>시험 기본 정보
+                        </h6>
+                        <p class="text-muted">시험명과 실시 날짜를 입력해주세요.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            {{ form.exam_name.label(class="form-label required") }}
+                            {{ form.exam_name(class="form-control form-control-lg", placeholder="예: 한국어 중간고사, 받아쓰기 시험") }}
+                            {% if form.exam_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.exam_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.exam_date.label(class="form-label required") }}
+                            {{ form.exam_date(class="form-control form-control-lg") }}
+                            {% if form.exam_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.exam_date.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Score Information -->
+                    <div class="section-header">
+                        <h6 class="text-success">
+                            <i data-feather="award" class="me-2"></i>점수 정보
+                        </h6>
+                        <p class="text-muted">획득 점수와 만점을 입력해주세요.</p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            {{ form.score.label(class="form-label required") }}
+                            <div class="input-group input-group-lg">
+                                {{ form.score(class="form-control", placeholder="0", min="0") }}
+                                <span class="input-group-text">점</span>
+                            </div>
+                            {% if form.score.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.score.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.max_score.label(class="form-label required") }}
+                            <div class="input-group input-group-lg">
+                                {{ form.max_score(class="form-control", placeholder="100", min="1") }}
+                                <span class="input-group-text">점</span>
+                            </div>
+                            {% if form.max_score.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.max_score.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Score Preview -->
+                    <div class="card bg-light mb-4" id="scorePreview" style="display: none;">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-3">점수 미리보기</h6>
+                            <div class="score-display">
+                                <div class="score-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-2">
+                                    <span id="scorePercentage">0</span>%
+                                </div>
+                                <div class="score-fraction">
+                                    <span id="previewScore">0</span> / <span id="previewMaxScore">0</span>
+                                </div>
+                                <div class="score-grade mt-2">
+                                    <span id="scoreGrade" class="badge bg-secondary">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="section-header">
+                        <h6 class="text-info">
+                            <i data-feather="edit-3" class="me-2"></i>추가 정보
+                        </h6>
+                        <p class="text-muted">시험과 관련된 특이사항이나 비고를 입력해주세요.</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.notes.label(class="form-label") }}
+                        {{ form.notes(class="form-control", rows="4", placeholder="시험 난이도, 학습자 반응, 개선 필요사항 등을 기록해주세요") }}
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.notes.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                            <i data-feather="arrow-left" class="me-2"></i>취소
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i data-feather="save" class="me-2"></i>시험 기록 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recent Exams -->
+        {% if learner.exams %}
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i data-feather="clock" class="me-2"></i>최근 시험 기록
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="recent-exams">
+                    {% for exam in learner.exams[:3] %}
+                    <div class="exam-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ exam.exam_name }}</h6>
+                            <small class="text-muted">{{ exam.exam_date.strftime('%Y년 %m월 %d일') }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="h6 mb-0">{{ exam.score }}/{{ exam.max_score }}</span>
+                            <div>
+                                <small class="text-muted">{{ (exam.score / exam.max_score * 100) | round(1) }}%</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% if not loop.last %}<hr class="my-2">{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// Score preview calculation
+function updateScorePreview() {
+    const scoreInput = document.getElementById('score');
+    const maxScoreInput = document.getElementById('max_score');
+    const scorePreview = document.getElementById('scorePreview');
+    
+    const score = parseInt(scoreInput.value) || 0;
+    const maxScore = parseInt(maxScoreInput.value) || 0;
+    
+    if (score > 0 && maxScore > 0) {
+        const percentage = Math.round((score / maxScore) * 100);
+        
+        document.getElementById('scorePercentage').textContent = percentage;
+        document.getElementById('previewScore').textContent = score;
+        document.getElementById('previewMaxScore').textContent = maxScore;
+        
+        // Grade calculation
+        const gradeElement = document.getElementById('scoreGrade');
+        let grade, className;
+        
+        if (percentage >= 90) {
+            grade = 'A'; className = 'bg-success';
+        } else if (percentage >= 80) {
+            grade = 'B'; className = 'bg-info';
+        } else if (percentage >= 70) {
+            grade = 'C'; className = 'bg-warning';
+        } else if (percentage >= 60) {
+            grade = 'D'; className = 'bg-orange';
+        } else {
+            grade = 'F'; className = 'bg-danger';
+        }
+        
+        gradeElement.textContent = grade;
+        gradeElement.className = 'badge ' + className;
+        
+        scorePreview.style.display = 'block';
+    } else {
+        scorePreview.style.display = 'none';
+    }
+}
+
+// Add event listeners for score inputs
+document.getElementById('score').addEventListener('input', updateScorePreview);
+document.getElementById('max_score').addEventListener('input', updateScorePreview);
+
+// Validation for score vs max score
+document.getElementById('score').addEventListener('input', function() {
+    const score = parseInt(this.value) || 0;
+    const maxScore = parseInt(document.getElementById('max_score').value) || 0;
+    
+    if (maxScore > 0 && score > maxScore) {
+        this.setCustomValidity('점수는 만점보다 클 수 없습니다.');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Auto-resize textarea
+document.getElementById('notes').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+});
+
+// Set today as default exam date
+document.addEventListener('DOMContentLoaded', function() {
+    const examDateInput = document.getElementById('exam_date');
+    if (!examDateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        examDateInput.value = today;
+    }
+});
+
+// Feather icons
+feather.replace();
+</script>
+{% endblock %}

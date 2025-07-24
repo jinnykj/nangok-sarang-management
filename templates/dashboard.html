@@ -1,0 +1,505 @@
+{% extends "base.html" %}
+
+{% block title %}통계 대시보드 - 성인 문해교육 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 fw-bold text-primary">
+                    <i data-feather="bar-chart-2" class="me-2"></i>통계 대시보드
+                </h1>
+                <p class="text-muted">학습자 현황 및 성과 분석</p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-outline-primary" onclick="refreshDashboard()">
+                    <i data-feather="refresh-cw" class="me-2"></i>새로고침
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-primary text-white mb-3">
+                    <i data-feather="users" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 class="stat-number text-primary">{{ total_learners }}</h3>
+                <p class="stat-label text-muted">총 학습자</p>
+                <small class="text-success">
+                    <i data-feather="trending-up" class="icon-sm me-1"></i>
+                    전월 대비 증가
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-success text-white mb-3">
+                    <i data-feather="check-circle" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 class="stat-number text-success">{{ completed_tests }}</h3>
+                <p class="stat-label text-muted">완료된 레벨 테스트</p>
+                <small class="text-info">
+                    <i data-feather="percent" class="icon-sm me-1"></i>
+                    {{ ((completed_tests / total_learners * 100) | round(1)) if total_learners > 0 else 0 }}% 완료율
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-info text-white mb-3">
+                    <i data-feather="users" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 class="stat-number text-info">{{ class_distribution|length }}</h3>
+                <p class="stat-label text-muted">운영 중인 반</p>
+                <small class="text-muted">
+                    <i data-feather="book" class="icon-sm me-1"></i>
+                    활발한 학습 진행
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="stat-icon bg-warning text-white mb-3">
+                    <i data-feather="award" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 class="stat-number text-warning">{{ score_ranges[0][1] }}</h3>
+                <p class="stat-label text-muted">우수 학습자 (80점 이상)</p>
+                <small class="text-success">
+                    <i data-feather="star" class="icon-sm me-1"></i>
+                    높은 성취도
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="row mb-4">
+    <!-- Class Distribution Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="pie-chart" class="me-2 text-primary"></i>반별 학습자 분포
+                    </h5>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportChart('classChart')">
+                            <i data-feather="download" class="icon-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if class_distribution %}
+                    <div class="chart-container">
+                        <canvas id="classChart" width="400" height="300"></canvas>
+                    </div>
+                    <div class="chart-legend mt-3">
+                        {% for class_name, count in class_distribution %}
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: {{ ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d', '#17a2b8'][loop.index0] }}"></span>
+                            <span class="legend-text">{{ class_name }}: {{ count }}명</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i data-feather="pie-chart" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                        <h6 class="text-muted">반별 데이터가 없습니다</h6>
+                        <p class="text-muted">학습자가 반에 배정되면 데이터가 표시됩니다.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Score Distribution Chart -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="bar-chart" class="me-2 text-success"></i>점수 분포
+                    </h5>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm btn-outline-success" onclick="exportChart('scoreChart')">
+                            <i data-feather="download" class="icon-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="scoreChart" width="400" height="300"></canvas>
+                </div>
+                <div class="score-summary mt-3">
+                    <div class="row text-center">
+                        {% for range_name, count in score_ranges %}
+                        <div class="col-6 col-md-3 mb-2">
+                            <div class="score-summary-item">
+                                <div class="score-count">{{ count }}</div>
+                                <div class="score-range">{{ range_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="row mb-4">
+    <!-- 실제 운영반별 분포 -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="users" class="me-2 text-warning"></i>운영반별 분포
+                    </h5>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm btn-outline-warning" onclick="exportChart('actualClassChart')">
+                            <i data-feather="download" class="icon-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="actualClassChart" width="400" height="300"></canvas>
+                </div>
+                <div class="class-stats mt-3">
+                    <div class="row text-center">
+                        <div class="col-3 mb-2">
+                            <div class="stat-item">
+                                <div class="stat-value text-primary" id="joyClassCount">0</div>
+                                <div class="stat-label">기쁨반</div>
+                            </div>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <div class="stat-item">
+                                <div class="stat-value text-success" id="graceClassCount">0</div>
+                                <div class="stat-label">은혜반</div>
+                            </div>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <div class="stat-item">
+                                <div class="stat-value text-info" id="wisdomClassCount">0</div>
+                                <div class="stat-label">지혜반</div>
+                            </div>
+                        </div>
+                        <div class="col-3 mb-2">
+                            <div class="stat-item">
+                                <div class="stat-value text-warning" id="seaClassCount">0</div>
+                                <div class="stat-label">바다반</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Registration Trend -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="trending-up" class="me-2 text-info"></i>월별 등록 추이
+                    </h5>
+                    <div class="chart-controls">
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info active" data-period="6">6개월</button>
+                            <button class="btn btn-outline-info" data-period="12">1년</button>
+                        </div>
+                        <button class="btn btn-sm btn-outline-info ms-2" onclick="exportChart('trendChart')">
+                            <i data-feather="download" class="icon-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="trendChart" width="800" height="400"></canvas>
+                </div>
+                {% if monthly_registrations %}
+                <div class="trend-summary mt-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="summary-item">
+                                <h6 class="text-primary">평균 월별 등록</h6>
+                                <p class="text-muted">{{ (monthly_registrations | sum(attribute=2) / monthly_registrations|length) | round(1) }}명</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-item">
+                                <h6 class="text-success">최고 등록 월</h6>
+                                <p class="text-muted">
+                                    {% set max_month = monthly_registrations | max(attribute=2) %}
+                                    {{ max_month[0] }}년 {{ max_month[1] }}월 ({{ max_month[2] }}명)
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="summary-item">
+                                <h6 class="text-info">증가 추세</h6>
+                                <p class="text-muted">
+                                    {% if monthly_registrations|length >= 2 %}
+                                        {% set growth = ((monthly_registrations[-1][2] - monthly_registrations[-2][2]) / monthly_registrations[-2][2] * 100) if monthly_registrations[-2][2] > 0 else 0 %}
+                                        {% if growth > 0 %}
+                                            <span class="text-success">+{{ growth | round(1) }}%</span>
+                                        {% elif growth < 0 %}
+                                            <span class="text-danger">{{ growth | round(1) }}%</span>
+                                        {% else %}
+                                            <span class="text-muted">변화 없음</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">데이터 부족</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row">
+    <!-- Performance Insights -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i data-feather="target" class="me-2"></i>성과 분석
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="insight-list">
+                    <div class="insight-item">
+                        <div class="insight-icon bg-success text-white">
+                            <i data-feather="trending-up"></i>
+                        </div>
+                        <div class="insight-content">
+                            <h6>우수 성취율</h6>
+                            <p class="text-muted">80점 이상 학습자가 전체의 {{ ((score_ranges[0][1] / total_learners * 100) | round(1)) if total_learners > 0 else 0 }}%를 차지합니다.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon bg-info text-white">
+                            <i data-feather="users"></i>
+                        </div>
+                        <div class="insight-content">
+                            <h6>반별 균형</h6>
+                            <p class="text-muted">
+                                {% if class_distribution %}
+                                    {% set max_class = class_distribution | max(attribute=1) %}
+                                    {{ max_class[0] }}에 가장 많은 학습자({{ max_class[1] }}명)가 배정되었습니다.
+                                {% else %}
+                                    아직 반별 배정 데이터가 없습니다.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-icon bg-warning text-white">
+                            <i data-feather="clock"></i>
+                        </div>
+                        <div class="insight-content">
+                            <h6>테스트 완료율</h6>
+                            <p class="text-muted">{{ ((completed_tests / total_learners * 100) | round(1)) if total_learners > 0 else 0 }}%의 학습자가 레벨 테스트를 완료했습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i data-feather="zap" class="me-2"></i>관리 작업
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="action-grid">
+                    <a href="{{ url_for('learner_list', status_filter='지원서 작성') }}" class="action-card">
+                        <div class="action-icon bg-warning text-white">
+                            <i data-feather="clock"></i>
+                        </div>
+                        <div class="action-content">
+                            <h6>대기 중인 신청</h6>
+                            <p class="text-muted">처리가 필요한 지원서를 확인하세요.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('learner_list', status_filter='레벨 테스트') }}" class="action-card">
+                        <div class="action-icon bg-info text-white">
+                            <i data-feather="book"></i>
+                        </div>
+                        <div class="action-content">
+                            <h6>테스트 진행 중</h6>
+                            <p class="text-muted">레벨 테스트 진행 상황을 점검하세요.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('learner_list', class_filter='') }}" class="action-card">
+                        <div class="action-icon bg-success text-white">
+                            <i data-feather="users"></i>
+                        </div>
+                        <div class="action-content">
+                            <h6>전체 학습자</h6>
+                            <p class="text-muted">모든 학습자 목록을 관리하세요.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('application') }}" class="action-card">
+                        <div class="action-icon bg-primary text-white">
+                            <i data-feather="user-plus"></i>
+                        </div>
+                        <div class="action-content">
+                            <h6>새 학습자 등록</h6>
+                            <p class="text-muted">새로운 학습자를 등록하세요.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+// Initialize dashboard with data
+const dashboardData = {
+    classDistribution: {
+        labels: [{% for class_name, count in class_distribution %}'{{ class_name }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        data: [{% for class_name, count in class_distribution %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}]
+    },
+    scoreDistribution: {
+        labels: ['80점 이상', '60-79점', '40-59점', '40점 미만'],
+        data: [{% for range_name, count in score_ranges %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}]
+    },
+    monthlyRegistrations: {
+        labels: [{% for year, month, count in monthly_registrations %}'{{ year }}년 {{ month }}월'{% if not loop.last %},{% endif %}{% endfor %}],
+        data: [{% for year, month, count in monthly_registrations %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}]
+    }
+};
+
+// Fetch actual class distribution data
+fetch('/api/dashboard_data')
+    .then(response => response.json())
+    .then(data => {
+        if (data.actual_class_distribution) {
+            initializeActualClassChart(data.actual_class_distribution);
+            updateClassStats(data.actual_class_distribution);
+        }
+    })
+    .catch(error => console.error('Error fetching dashboard data:', error));
+
+// Initialize actual class distribution chart
+function initializeActualClassChart(data) {
+    const ctx = document.getElementById('actualClassChart');
+    if (!ctx) return;
+    
+    const colors = ['#007bff', '#28a745', '#17a2b8', '#ffc107'];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.data,
+                backgroundColor: colors.slice(0, data.labels.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update class statistics
+function updateClassStats(data) {
+    const stats = {
+        '기쁨반': 'joyClassCount',
+        '은혜반': 'graceClassCount', 
+        '지혜반': 'wisdomClassCount',
+        '바다반': 'seaClassCount'
+    };
+    
+    // Reset all counts
+    Object.values(stats).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = '0';
+    });
+    
+    // Update with actual data
+    data.labels.forEach((label, index) => {
+        const statId = stats[label];
+        if (statId) {
+            const element = document.getElementById(statId);
+            if (element) element.textContent = data.data[index];
+        }
+    });
+}
+
+// Initialize charts
+initializeDashboard(dashboardData);
+
+// Refresh dashboard
+function refreshDashboard() {
+    location.reload();
+}
+
+// Export chart functionality
+function exportChart(chartId) {
+    const canvas = document.getElementById(chartId);
+    const url = canvas.toDataURL();
+    const link = document.createElement('a');
+    link.download = chartId + '.png';
+    link.href = url;
+    link.click();
+}
+</script>
+{% endblock %}

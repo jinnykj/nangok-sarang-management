@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+
+{% block title %}학습자 관리 - 난곡 사랑의집 관리 시스템{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 fw-bold text-primary">
+                    <i data-feather="users" class="me-2"></i>학습자 관리
+                </h1>
+                <p class="text-muted">등록된 학습자 목록 및 관리</p>
+            </div>
+            <div>
+                <a href="{{ url_for('application') }}" class="btn btn-primary btn-lg">
+                    <i data-feather="user-plus" class="me-2"></i>새 학습자 등록
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">
+                    <i data-feather="search" class="icon-sm me-1"></i>이름 검색
+                </label>
+                <input type="text" name="search" class="form-control" placeholder="학습자 이름으로 검색" value="{{ search }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">
+                    <i data-feather="filter" class="icon-sm me-1"></i>배정반 필터
+                </label>
+                <select name="class_filter" class="form-select">
+                    <option value="">모든 반</option>
+                    {% for class_name in classes %}
+                        <option value="{{ class_name }}" {{ 'selected' if class_filter == class_name }}>{{ class_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">
+                    <i data-feather="users" class="icon-sm me-1"></i>운영반
+                </label>
+                <select name="actual_class_filter" class="form-select">
+                    <option value="">모든 반</option>
+                    <option value="기쁨반" {{ 'selected' if actual_class_filter == '기쁨반' }}>기쁨반</option>
+                    <option value="은혜반" {{ 'selected' if actual_class_filter == '은혜반' }}>은혜반</option>
+                    <option value="지혜반" {{ 'selected' if actual_class_filter == '지혜반' }}>지혜반</option>
+                    <option value="바다반" {{ 'selected' if actual_class_filter == '바다반' }}>바다반</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">
+                    <i data-feather="activity" class="icon-sm me-1"></i>상태
+                </label>
+                <select name="status_filter" class="form-select">
+                    <option value="">모든 상태</option>
+                    {% for status_name in statuses %}
+                        <option value="{{ status_name }}" {{ 'selected' if status_filter == status_name }}>{{ status_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="search" class="icon-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Summary -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-primary mb-2">
+                    <i data-feather="users" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-primary">{{ learners.total }}</h4>
+                <p class="text-muted mb-0">총 학습자</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-success mb-2">
+                    <i data-feather="check-circle" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-success">{{ learners.items | selectattr('status', 'equalto', '반 배정 완료') | list | length }}</h4>
+                <p class="text-muted mb-0">배정 완료</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-warning mb-2">
+                    <i data-feather="clock" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-warning">{{ learners.items | rejectattr('status', 'equalto', '반 배정 완료') | list | length }}</h4>
+                <p class="text-muted mb-0">진행 중</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="text-info mb-2">
+                    <i data-feather="calendar" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h4 class="text-info">{{ learners.items | selectattr('created_at') | selectattr('created_at.date', 'equalto', moment().date()) | list | length if moment else 0 }}</h4>
+                <p class="text-muted mb-0">오늘 등록</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Learners Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i data-feather="list" class="me-2"></i>학습자 목록
+            </h5>
+            <small class="text-muted">
+                {{ learners.total }}명 중 {{ (learners.page - 1) * learners.per_page + 1 }}~{{ learners.page * learners.per_page if learners.page * learners.per_page < learners.total else learners.total }}명 표시
+            </small>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if learners.items %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>이름</th>
+                            <th>생년월일</th>
+                            <th>연락처</th>
+                            <th>레벨반</th>
+                            <th>배정반</th>
+                            <th>진행상태</th>
+                            <th>학적상태</th>
+                            <th>등록일</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for learner in learners.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        {{ learner.name[0] }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ learner.name }}</h6>
+                                        {% if learner.email %}
+                                        <small class="text-muted">{{ learner.email }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ learner.birth_date.strftime('%Y년 %m월 %d일') }}</td>
+                            <td>
+                                <a href="tel:{{ learner.phone }}" class="text-decoration-none">
+                                    <i data-feather="phone" class="icon-sm me-1"></i>{{ learner.phone }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if learner.assigned_class %}
+                                    {% if learner.assigned_class == '예비 중등반' %}
+                                        <span class="badge bg-success">{{ learner.assigned_class }}</span>
+                                    {% elif learner.assigned_class == '초등 고급반' %}
+                                        <span class="badge bg-info">{{ learner.assigned_class }}</span>
+                                    {% elif learner.assigned_class == '초등 중급반' %}
+                                        <span class="badge bg-warning">{{ learner.assigned_class }}</span>
+                                    {% else %}
+                                        <span class="badge bg-primary">{{ learner.assigned_class }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">미배정</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if learner.class_name %}
+                                    {% if learner.class_name == '기쁨반' %}
+                                        <span class="badge bg-primary">{{ learner.class_name }}</span>
+                                    {% elif learner.class_name == '은혜반' %}
+                                        <span class="badge bg-success">{{ learner.class_name }}</span>
+                                    {% elif learner.class_name == '지혜반' %}
+                                        <span class="badge bg-info">{{ learner.class_name }}</span>
+                                    {% elif learner.class_name == '바다반' %}
+                                        <span class="badge bg-warning">{{ learner.class_name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ learner.class_name }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">미배정</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if learner.status == '반 배정 완료' %}
+                                    <span class="badge bg-success">{{ learner.status }}</span>
+                                {% elif learner.status == '레벨 테스트' %}
+                                    <span class="badge bg-info">{{ learner.status }}</span>
+                                {% elif learner.status == '상담' %}
+                                    <span class="badge bg-warning">{{ learner.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ learner.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set academic_status = learner.academic_status or '재학' %}
+                                {% if academic_status == '재학' %}
+                                    <span class="badge bg-primary">{{ academic_status }}</span>
+                                {% elif academic_status == '휴학' %}
+                                    <span class="badge bg-warning">{{ academic_status }}</span>
+                                {% elif academic_status == '중퇴' %}
+                                    <span class="badge bg-danger">{{ academic_status }}</span>
+                                {% elif academic_status == '졸업' %}
+                                    <span class="badge bg-success">{{ academic_status }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ academic_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if learner.created_at %}
+                                    {{ learner.created_at.strftime('%Y-%m-%d') }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('learner_profile', learner_id=learner.id) }}" 
+                                       class="btn btn-outline-primary" title="상세 보기">
+                                        <i data-feather="eye" class="icon-sm"></i>
+                                    </a>
+                                    <a href="{{ url_for('add_counseling', learner_id=learner.id) }}" 
+                                       class="btn btn-outline-info" title="상담 추가">
+                                        <i data-feather="message-circle" class="icon-sm"></i>
+                                    </a>
+                                    <a href="{{ url_for('add_exam', learner_id=learner.id) }}" 
+                                       class="btn btn-outline-success" title="시험 기록">
+                                        <i data-feather="file-plus" class="icon-sm"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            onclick="confirmDelete('{{ learner.name }}', {{ learner.id }})" title="삭제">
+                                        <i data-feather="trash-2" class="icon-sm"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i data-feather="user-x" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+                <h5 class="text-muted">학습자가 없습니다</h5>
+                <p class="text-muted">검색 조건에 맞는 학습자가 없거나, 아직 등록된 학습자가 없습니다.</p>
+                <a href="{{ url_for('application') }}" class="btn btn-primary">
+                    <i data-feather="user-plus" class="me-2"></i>첫 학습자 등록하기
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if learners.pages > 1 %}
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="학습자 목록 페이지네이션">
+        <ul class="pagination">
+            {% if learners.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('learner_list', page=learners.prev_num, search=search, class_filter=class_filter, status_filter=status_filter) }}">이전</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">이전</span>
+                </li>
+            {% endif %}
+            
+            {% for page_num in learners.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != learners.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('learner_list', page=page_num, search=search, class_filter=class_filter, status_filter=status_filter) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if learners.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('learner_list', page=learners.next_num, search=search, class_filter=class_filter, status_filter=status_filter) }}">다음</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">다음</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+<!-- 삭제 확인 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">학습자 삭제 확인</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i data-feather="alert-triangle" class="text-danger mb-3" style="width: 48px; height: 48px;"></i>
+                    <h6>정말로 <span id="learnerName" class="text-danger"></span> 학습자를 삭제하시겠습니까?</h6>
+                    <p class="text-muted mt-2">
+                        이 작업은 되돌릴 수 없으며, 학습자의 모든 데이터(레벨 테스트, 상담 기록, 시험 기록)가 함께 삭제됩니다.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Feather icons
+feather.replace();
+
+// Auto-submit form on filter change
+document.querySelectorAll('select[name="class_filter"], select[name="status_filter"]').forEach(select => {
+    select.addEventListener('change', function() {
+        this.closest('form').submit();
+    });
+});
+
+// Clear filters
+function clearFilters() {
+    window.location.href = "{{ url_for('learner_list') }}";
+}
+
+// Delete confirmation
+function confirmDelete(learnerName, learnerId) {
+    document.getElementById('learnerName').textContent = learnerName;
+    document.getElementById('deleteForm').action = '/learners/delete/' + learnerId;
+    
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+// Keyboard shortcut for search
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        document.querySelector('input[name="search"]').focus();
+    }
+});
+</script>
+{% endblock %}
